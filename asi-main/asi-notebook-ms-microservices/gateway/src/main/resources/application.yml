@@ -1,0 +1,129 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  config:
+    import: "optional:consul:"
+  cloud:
+    consul:
+      host: ${SPRING_CLOUD_CONSUL_HOST:localhost}
+      port: ${SPRING_CLOUD_CONSUL_PORT:8500}
+      config:
+        format: yaml
+        enabled: true
+        data-key: data
+        prefixes: config
+        default-context: application
+      discovery:
+        enabled: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+    gateway:
+      discovery:
+        locator:
+          enabled: true  # default false
+      server.webflux.routes:           
+        - id: user-service
+          uri: lb://user-service #
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          predicates:
+            - Path=/api/account/**,/api/users/**              
+        - id: notes-service
+          uri: lb://notes-service #
+          filters:
+#            - RewritePath=/api/?(?<segment>.*), /$\{segment}
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          predicates:
+            - Path=/api/notes/**,/api/categories/**
+        
+        # NUEVOS MICROSERVICIOS - Segunda Iteración
+
+        - id: habits-service
+          uri: lb://habits-service
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          predicates:
+            - Path=/api/habits/**
+        
+        - id: goals-service
+          uri: lb://goals-service
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          predicates:
+            - Path=/api/goals/**
+        
+        - id: badges-service
+          uri: lb://badges-service
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          predicates:
+            - Path=/api/badges/**
+        
+        - id: community-service
+          uri: lb://community-service
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          predicates:
+            - Path=/api/communities/**
+            
+#        - id: legacy-service
+#          uri: lb://legacy-service #
+#          filters:
+#            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+#          predicates:
+#            - Path=/api/**          
+          metadata:
+            cors:
+              allowedOrigins: 'http://localhost:1234'
+              allowedMethods:
+                - GET
+                - POST
+                - PUT
+                - DELETE
+                - OPTIONS
+              allowedHeaders: '*'
+              maxAge: 30      
+      globalcors:
+        corsConfigurations:
+          '[/**]':
+            allowedOrigins: "http://localhost:1234"
+            allowedHeaders: "*"
+            allowedMethods:
+              - GET
+              - POST
+              - GET
+              - POST
+              - PUT
+              - DELETE
+              - OPTIONS
+gateway: 
+  config:
+    clientHost: http://localhost:1234/
+    jwtSecretKey: h3qlqtvjaq8NEm1AG$2p8qT!^c3AkrE&rno2z8LZWD@qWo40xphNoPQ7j%J197
+    jwtValidity: 7200
+    public-paths:
+      - "/api/account/register"      
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,gateway
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    ROOT: INFO
+    org.springframework.web.cors: TRACE
+    org.springframework.cloud.gateway: TRACE
+    org.springframework.security.web.server: TRACE
+    es.udc: TRACE
+
+

@@ -1,0 +1,145 @@
+services: #Cada servicio es un contenedor Docker
+    gateway:
+        build:  # Construye la imagen a partir del Dockerfile en el contexto especificado
+            context: ./gateway     
+        environment:
+            - SPRING_CLOUD_CONSUL_HOST=consul
+            - SPRING_CLOUD_CONSUL_PORT=8500      
+        ports:   #Necesario para que el navegador pueda acceder al servicio
+            - "8080:8080"    # 
+        networks:
+            - ms    
+    user:
+        build:  # Construye la imagen a partir del Dockerfile en el contexto especificado
+            context: ./user 
+        environment:
+            - SPRING_CLOUD_CONSUL_HOST=consul
+            - SPRING_CLOUD_CONSUL_PORT=8500
+            - POSTGRES_HOST=database_users
+            - POSTGRES_DB=users
+            - KEYCLOAK_URI=http://keycloak:8080/realms/asirealm
+        ports:   #Necesario para que el navegador pueda acceder al servicio
+            - "9091:9091"    # 
+        networks:
+            - ms
+    habits:
+        build:
+            context: ./habits
+        environment:
+            - SPRING_CLOUD_CONSUL_HOST=consul
+            - SPRING_CLOUD_CONSUL_PORT=8500
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://database_habits:5432/habits_db
+            - SPRING_DATASOURCE_USERNAME=postgres
+            - SPRING_DATASOURCE_PASSWORD=postgres
+        ports:
+            - "9094:9094"
+        networks:
+            - ms
+    goals:
+        build:
+            context: ./goals
+        environment:
+            - SPRING_CLOUD_CONSUL_HOST=consul
+            - SPRING_CLOUD_CONSUL_PORT=8500
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://database_goals:5432/goals_db
+            - SPRING_DATASOURCE_USERNAME=postgres
+            - SPRING_DATASOURCE_PASSWORD=postgres
+        ports:
+            - "9095:9095"
+        networks:
+            - ms
+    community:
+        build:
+            context: ./community
+        environment:
+            - SPRING_CLOUD_CONSUL_HOST=consul
+            - SPRING_CLOUD_CONSUL_PORT=8500
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://database_community:5432/community_db
+            - SPRING_DATASOURCE_USERNAME=postgres
+            - SPRING_DATASOURCE_PASSWORD=postgres
+        ports:
+            - "9097:9097"
+        networks:
+            - ms
+    client:
+        build:
+            context: ./client
+        ports:
+            - "1234:1234"
+        networks:
+            - ms   
+    database_users:
+        image: postgres:14.1-alpine 
+        #restart: always            
+        environment:                  
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=users
+        ports:
+            - "5455:5432"              
+        volumes:                    
+        - users_data:/var/lib/postgresql/data
+        networks:
+            - ms
+    database_habits:
+        image: postgres:14.1-alpine
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=habits_db
+        ports:
+            - "5457:5432"
+        volumes:
+            - habits_data:/var/lib/postgresql/data
+        networks:
+            - ms
+    database_goals:
+        image: postgres:14.1-alpine
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=goals_db
+        ports:
+            - "5458:5432"
+        volumes:
+            - goals_data:/var/lib/postgresql/data
+        networks:
+            - ms
+    database_community:
+        image: postgres:14.1-alpine
+        environment:
+            - POSTGRES_USER=postgres
+            - POSTGRES_PASSWORD=postgres
+            - POSTGRES_DB=community_db
+        ports:
+            - "5459:5432"
+        volumes:
+            - community_data:/var/lib/postgresql/data
+        networks:
+            - ms
+    consul:
+        image: hashicorp/consul:1.17
+        container_name: consul
+        restart: always
+        ports:
+            - "8500:8500"
+        command: consul agent -dev -ui -client=0.0.0.0
+        volumes:
+            - consul_data:/consul/data
+        networks:
+            - ms
+volumes:
+    users_data:  #Generamos un volumen con el contenido de la base de datos de usuarios
+        driver: local
+    habits_data:  #Generamos un volumen con el contenido de la base de datos de hábitos
+        driver: local
+    goals_data:  #Generamos un volumen con el contenido de la base de datos de metas
+        driver: local
+    community_data:  #Generamos un volumen con el contenido de la base de datos de comunidades
+        driver: local
+    consul_data:
+        driver: local
+
+networks:
+    ms:
+        driver: bridge

@@ -1,0 +1,20 @@
+package es.udc.asi.gateway;
+
+import org.springframework.cloud.gateway.server.mvc.filter.AfterFilterFunctions;
+import org.springframework.cloud.gateway.server.mvc.filter.FilterFunctions;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.web.servlet.function.HandlerFilterFunction;
+import org.springframework.web.servlet.function.ServerResponse;
+
+@Configuration
+class RouteConfiguration {
+
+    @Bean
+    public HandlerFilterFunction<ServerResponse, ServerResponse> dedupeHandler() {
+        return FilterFunctions.dedupeResponseHeader("Access-Control-Allow-Origin",
+                                        AfterFilterFunctions.DedupeStrategy.RETAIN_FIRST);        
+    }
+
+    
+}

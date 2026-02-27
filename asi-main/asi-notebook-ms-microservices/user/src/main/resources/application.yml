@@ -1,0 +1,57 @@
+server:
+  port: 9090
+
+spring:
+  application:
+    name: user-service
+# Descomentar para utilizar postgresql en vez de H2
+  datasource:
+    host: ${POSTGRES_HOST:localhost}    #Utilizamos el nombre del servicio en lugar de localhost
+    port: 5432
+    database: ${POSTGRES_DB:users}
+    username: postgres
+    password: postgres
+    url: jdbc:postgresql://${spring.datasource.host}:${spring.datasource.port}/${spring.datasource.database}
+  cloud:
+    consul:
+      host: ${SPRING_CLOUD_CONSUL_HOST:localhost}
+      port: ${SPRING_CLOUD_CONSUL_PORT:8500}
+      config:
+        format: yaml
+        enabled: true
+        data-key: data
+        prefixes: config
+        default-context: application
+      discovery:
+        enabled: true
+        prefer-ip-address: true
+        health-check-path: /actuator/health
+        health-check-interval: 10s
+        instance-id: ${spring.application.name}:${server.port}
+
+  jpa:
+    database: postgresql
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+properties:
+  clientHost: http://localhost:1234/
+  jwtSecretKey: h3qlqtvjaq8NEm1AG$2p8qT!^c3AkrE&rno2z8LZWD@qWo40xphNoPQ7j%J197
+  jwtValidity: 7200
+
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+logging:
+  level:
+    org: INFO
+    es.udc.asi: DEBUG
+    feign:
+      client: DEBUG

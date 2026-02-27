@@ -1,0 +1,46 @@
+spring:
+  application:
+    name: habits-service
+  datasource:
+    url: jdbc:postgresql://localhost:5432/habits_db
+    username: postgres
+    password: postgres
+    driver-class-name: org.postgresql.Driver
+  jpa:
+    hibernate:
+      ddl-auto: update
+    show-sql: true
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+  cloud:
+    consul:
+      host: localhost
+      port: 8500
+      discovery:
+        instance-id: ${spring.application.name}:${random.value}
+        health-check-interval: 10s
+        health-check-path: /actuator/health
+        prefer-ip-address: true
+
+server:
+  port: 9094
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info
+  endpoint:
+    health:
+      show-details: always
+
+# Open-Meteo API Configuration
+weather:
+  api:
+    url: https://api.open-meteo.com/v1/forecast
+
+# Goals Service Configuration
+goals:
+  service:
+    url: http://localhost:9095
