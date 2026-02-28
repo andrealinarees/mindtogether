@@ -22,7 +22,7 @@
                   id="name"
                   v-model="form.name"
                   required
-                  placeholder="Ej: Correr 30 minutos, Leer antes de dormir..."
+                  placeholder="Ej: Meditación matutina, Respiración 4-7-8, Caminata consciente..."
                 />
               </div>
 
@@ -36,7 +36,7 @@
                   id="description"
                   v-model="form.description"
                   rows="3"
-                  placeholder="Describe tu hábito, objetivos y motivación..."
+                  placeholder="Describe tu práctica de bienestar, beneficios y cómo realizarla..."
                 ></textarea>
               </div>
 
@@ -73,7 +73,7 @@
                 >
                   <option value="">Selecciona una categoría</option>
                   <option v-for="cat in categories" :key="cat.id" :value="cat.id">
-                    <i :class="cat.icon"></i> {{ cat.name }}
+                    {{ cat.name }}
                   </option>
                 </select>
                 <div class="form-text">

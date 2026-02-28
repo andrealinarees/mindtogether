@@ -18,18 +18,6 @@ export default [
     meta: { requiresAuth: true }
   },
   {
-    path: '/journal/:id',
-    name: 'JournalEntryDetail',
-    component: () => import('./JournalEntryDetail.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/journal/:id/edit',
-    name: 'JournalEntryEdit',
-    component: () => import('./JournalEntryForm.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/journal/analysis',
     name: 'JournalAnalysis',
     component: () => import('./JournalAnalysis.vue'),
@@ -45,6 +33,18 @@ export default [
     path: '/journal/reports',
     name: 'JournalReports',
     component: () => import('./JournalReports.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/journal/:id',
+    name: 'JournalEntryDetail',
+    component: () => import('./JournalEntryDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/journal/:id/edit',
+    name: 'JournalEntryEdit',
+    component: () => import('./JournalEntryForm.vue'),
     meta: { requiresAuth: true }
   }
 ]
