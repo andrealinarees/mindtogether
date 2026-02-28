@@ -64,7 +64,9 @@ public class SecurityConfiguration {
         .requestMatchers("/actuator/**").permitAll()
         .requestMatchers(HttpMethod.POST, "/api/account/authenticate").permitAll()
         .requestMatchers(HttpMethod.POST, "/api/account/register").permitAll()
-        .requestMatchers(HttpMethod.GET, "/api/users/**").hasAnyAuthority(UserAuthority.ADMIN.toString())
+        .requestMatchers(HttpMethod.GET, "/api/users").hasAnyAuthority(UserAuthority.ADMIN.toString())
+        .requestMatchers(HttpMethod.GET, "/api/users/stats").hasAnyAuthority(UserAuthority.ADMIN.toString())
+        .requestMatchers(HttpMethod.GET, "/api/users/*").authenticated()
         .requestMatchers("/**").authenticated())
       .with(securityConfigurerAdapter(), Customizer.withDefaults());
     // @formatter:on

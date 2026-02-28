@@ -18,10 +18,23 @@ const onResponseSuccess = (response) => response;
 // estamos intentando acceder a un recurso sin
 // los permisos correctos
 const onResponseFailure = (err) => {
-  const status = err.response.status;
+  const status = err.response?.status;
+  const url = err.config?.url;
+  
+  console.error('❌ HTTP ERROR:', {
+    status,
+    url,
+    statusText: err.response?.statusText,
+    willLogout: status === 401 && !url.includes("authenticate")
+  });
+  
   // excepto cuando estemos haciendo login
   if (!err.config.url.includes("authenticate")) {
-    if (status == 401 || status == 403) {
+    // Solo logout en 401 (token inválido/expirado).
+    // 403 = usuario autenticado sin permisos para ese endpoint,
+    // no debe causar logout ni redirigir al inicio.
+    if (status == 401) {
+      console.warn('⚠️ Token inválido/expirado - ejecutando logout');
       onUnauthorized();
     }
   }

@@ -97,12 +97,13 @@ const routes = [
     name: "ProfileEdit",
     component: ProfileEditView
   },
+].concat(habitsRoutes, goalsRoutes, mentalHealthGoalsRoutes, journalRoutes, wellnessRoutes, supportCirclesRoutes, rewardsRoutes, [
   {
     path: "/:catchAll(.*)*",
     component: ErrorNotFoundView,
     meta: { public: true }
   }
-].concat(habitsRoutes, goalsRoutes, mentalHealthGoalsRoutes, journalRoutes, wellnessRoutes, supportCirclesRoutes, rewardsRoutes);
+]);
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
