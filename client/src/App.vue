@@ -17,39 +17,52 @@
       </button>
       <div class="collapse navbar-collapse" id="navbarSupportedContent">
         <ul class="navbar-nav me-auto mb-2 mb-lg-0" v-if="store.state.user.logged">
-          <li class="nav-item">
+          <!-- Enlace Inicio para todos -->
+          <li class="nav-item" v-if="store.state.user.authority !== 'ADMIN'">
             <router-link class="nav-link" to="/dashboard" active-class="active">
               <i class="bi bi-house-door"></i> Inicio
             </router-link>
           </li>
-          <li class="nav-item">
+          <!-- Enlaces solo para usuarios normales -->
+          <li class="nav-item" v-if="store.state.user.authority !== 'ADMIN'">
             <router-link class="nav-link" to="/journal" active-class="active">
               <i class="bi bi-journal-text"></i> Diario
             </router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="store.state.user.authority !== 'ADMIN'">
             <router-link class="nav-link" to="/mental-health-goals" active-class="active">
               <i class="bi bi-trophy"></i> Metas
             </router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="store.state.user.authority !== 'ADMIN'">
             <router-link class="nav-link" to="/wellness" active-class="active">
               <i class="bi bi-flower1"></i> Prácticas
             </router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="store.state.user.authority !== 'ADMIN'">
             <router-link class="nav-link" to="/support-circles" active-class="active">
               <i class="bi bi-people"></i> Círculos
             </router-link>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" v-if="store.state.user.authority !== 'ADMIN'">
             <router-link class="nav-link" to="/achievements" active-class="active">
               <i class="bi bi-award"></i> Logros
             </router-link>
           </li>
+          <!-- Panel Admin solo para administradores -->
           <li class="nav-item" v-if="store.state.user.authority === 'ADMIN'">
             <router-link class="nav-link" to="/admin/dashboard" active-class="active">
               <i class="bi bi-shield-fill-check"></i> Panel Admin
+            </router-link>
+          </li>
+          <li class="nav-item" v-if="store.state.user.authority === 'ADMIN'">
+            <router-link class="nav-link" to="/admin/users" active-class="active">
+              <i class="bi bi-people-fill"></i> Usuarios
+            </router-link>
+          </li>
+          <li class="nav-item" v-if="store.state.user.authority === 'ADMIN'">
+            <router-link class="nav-link" to="/admin/communities" active-class="active">
+              <i class="bi bi-chat-dots"></i> Comunidades
             </router-link>
           </li>
         </ul>

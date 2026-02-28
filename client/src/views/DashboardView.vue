@@ -108,8 +108,8 @@
             <div v-if="!moodSelected" class="text-center">
               <p class="mb-3">Selecciona tu estado de ánimo:</p>
               <div class="mood-selector d-flex justify-content-around mb-3">
-                <div 
-                  v-for="mood in moods" 
+                <div
+                  v-for="mood in moods"
                   :key="mood.value"
                   class="mood-option"
                   @click="selectMood(mood)"
@@ -203,7 +203,7 @@ export default {
   name: 'DashboardView',
   setup() {
     const store = getStore()
-    
+
     // Contadores inicializados en 0
     const journalEntries = ref(0)
     const activeGoals = ref(0)
@@ -252,14 +252,14 @@ export default {
 
     const selectMood = async (mood) => {
       console.log('🎯 Carita seleccionada:', mood.label)
-      
+
       // Verificar si ya se registró un estado de ánimo hoy
       const today = new Date().toISOString().split('T')[0]
       const lastMoodDate = localStorage.getItem('lastMoodDate')
-      
+
       console.log('📅 Fecha de hoy:', today)
       console.log('📅 Última fecha registrada:', lastMoodDate)
-      
+
       if (lastMoodDate === today) {
         // Ya se registró un estado de ánimo hoy
         console.log('⚠️ Ya hay un registro de hoy')
@@ -273,10 +273,10 @@ export default {
       moodSelected.value = true
       console.log('✅ moodSelected:', moodSelected.value)
       console.log('✅ selectedMood:', selectedMood.value)
-      
+
       // SEGUNDO: Guardar en localStorage inmediatamente
       localStorage.setItem('lastMoodDate', today)
-      
+
       const moodEntry = {
         date: today,
         mood: mood.value,
@@ -286,15 +286,15 @@ export default {
         tags: ['estado-animo'],
         timestamp: new Date().toISOString()
       }
-      
+
       // Guardar en localStorage como backup
       const savedMoods = JSON.parse(localStorage.getItem('moodHistory') || '[]')
       savedMoods.push(moodEntry)
       localStorage.setItem('moodHistory', JSON.stringify(savedMoods))
-      
+
       // TERCERO: Incrementar el contador de entradas
       journalEntries.value++
-      
+
       console.log('✓ Estado de ánimo registrado:', mood.label)
 
       // CUARTO: Intentar guardar en el backend (en segundo plano)
@@ -309,19 +309,19 @@ export default {
     const resetMood = () => {
       const today = new Date().toISOString().split('T')[0]
       const lastMoodDate = localStorage.getItem('lastMoodDate')
-      
+
       if (lastMoodDate === today) {
         // Limpiar el estado pero mantener la fecha para que pueda cambiar el de hoy
         localStorage.removeItem('lastMoodDate')
       }
-      
+
       moodSelected.value = false
       selectedMood.value = null
     }
 
     const loadStatistics = async () => {
       loading.value = true
-      
+
       // Cargar entradas del diario
       try {
         const journals = await JournalRepository.findAll()
@@ -365,7 +365,7 @@ export default {
       // Verificar si ya se registró un estado de ánimo hoy
       const today = new Date().toISOString().split('T')[0]
       const lastMoodDate = localStorage.getItem('lastMoodDate')
-      
+
       if (lastMoodDate === today) {
         // Buscar el mood registrado en el backend
         try {
@@ -381,11 +381,11 @@ export default {
           }
         } catch (error) {
           console.log('No se pudo cargar del backend, buscando en localStorage')
-          
+
           // Buscar en localStorage
           const savedMoods = JSON.parse(localStorage.getItem('moodHistory') || '[]')
           const todayMood = savedMoods.find(m => m.date === today)
-          
+
           if (todayMood) {
             const mood = moods.value.find(m => m.value === todayMood.mood)
             if (mood) {
@@ -401,7 +401,8 @@ export default {
     }
 
     onMounted(() => {
-      loadStatistics()
+      // Aquí se cargarán las estadísticas reales de los servicios
+      // TODO: Conectar con los repositorios
     })
 
     return {
