@@ -45,8 +45,8 @@
             </router-link>
           </li>
           <li class="nav-item" v-if="store.state.user.authority !== 'ADMIN'">
-            <router-link class="nav-link" to="/achievements" active-class="active">
-              <i class="bi bi-award"></i> Logros
+            <router-link class="nav-link" to="/rewards" active-class="active">
+              <i class="bi bi-gift"></i> Recompensas
             </router-link>
           </li>
           <!-- Panel Admin solo para administradores -->

@@ -50,6 +50,23 @@
         <small>{{ goal.personalReward }}</small>
       </div>
 
+      <!-- Recompensas personalizadas asociadas -->
+      <div v-if="linkedRewards.length > 0" class="mb-3">
+        <small class="text-muted d-block mb-1">
+          <i class="bi bi-gift me-1"></i>Recompensas:
+        </small>
+        <div class="d-flex flex-wrap gap-1">
+          <span
+            v-for="reward in linkedRewards"
+            :key="reward.id"
+            :class="['badge', reward.status === 'UNLOCKED' ? 'bg-warning text-dark' : 'bg-secondary']"
+          >
+            {{ reward.icon }} {{ reward.name }}
+            <span v-if="reward.status === 'UNLOCKED'"> 🔓</span>
+          </span>
+        </div>
+      </div>
+
       <!-- Acciones -->
       <div class="d-flex gap-2">
         <button 
@@ -77,7 +94,8 @@
 </template>
 
 <script>
-import { computed } from 'vue'
+import { computed, ref, onMounted } from 'vue'
+import CustomRewardRepository from '@/repositories/CustomRewardRepository'
 
 export default {
   name: 'GoalCard',
@@ -89,6 +107,21 @@ export default {
   },
   emits: ['edit', 'complete', 'delete'],
   setup(props) {
+    const linkedRewards = ref([])
+
+    const loadLinkedRewards = async () => {
+      try {
+        linkedRewards.value = await CustomRewardRepository.findByGoal(props.goal.id)
+      } catch (error) {
+        // Silenciosamente ignorar errores de carga de recompensas
+        linkedRewards.value = []
+      }
+    }
+
+    onMounted(() => {
+      loadLinkedRewards()
+    })
+
     const progressPercentage = computed(() => {
       if (props.goal.targetValue === 0) return 0
       return Math.min(100, (props.goal.currentProgress * 100) / props.goal.targetValue)
@@ -148,6 +181,7 @@ export default {
     })
 
     return {
+      linkedRewards,
       progressPercentage,
       progressBarClass,
       statusBadgeClass,

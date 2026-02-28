@@ -28,11 +28,5 @@ export default [
     name: 'MentalHealthGoalAnalytics',
     component: () => import('./MentalHealthGoalAnalytics.vue'),
     meta: { requiresAuth: true }
-  },
-  {
-    path: '/achievements',
-    name: 'AchievementList',
-    component: () => import('./AchievementList.vue'),
-    meta: { requiresAuth: true }
   }
 ]

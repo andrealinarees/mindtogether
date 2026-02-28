@@ -1,7 +1,6 @@
 package com.mindtogether.goals.service;
 
 import com.mindtogether.goals.model.*;
-import com.mindtogether.goals.repository.AchievementRepository;
 import com.mindtogether.goals.repository.GoalMilestoneRepository;
 import com.mindtogether.goals.repository.MentalHealthGoalRepository;
 import com.mindtogether.goals.repository.ProgressSnapshotRepository;
@@ -23,7 +22,7 @@ public class MentalHealthGoalService {
     private final MentalHealthGoalRepository goalRepository;
     private final GoalMilestoneRepository milestoneRepository;
     private final ProgressSnapshotRepository snapshotRepository;
-    private final AchievementService achievementService;
+    private final CustomRewardService customRewardService;
 
     // ==================== CRUD Operations ====================
 
@@ -64,9 +63,6 @@ public class MentalHealthGoalService {
         goal.setCurrentProgress(0);
         
         MentalHealthGoal savedGoal = goalRepository.save(goal);
-        
-        // Verificar logros al crear primera meta
-        achievementService.checkFirstGoalCreated(userId);
         
         return savedGoal;
     }
@@ -125,9 +121,6 @@ public class MentalHealthGoalService {
                     
                     MentalHealthGoal savedGoal = goalRepository.save(goal);
                     
-                    // Verificar logros relacionados con progreso
-                    achievementService.checkProgressAchievements(userId, savedGoal);
-                    
                     return savedGoal;
                 });
     }
@@ -152,9 +145,6 @@ public class MentalHealthGoalService {
                     
                     MentalHealthGoal savedGoal = goalRepository.save(goal);
                     
-                    // Verificar logros
-                    achievementService.checkProgressAchievements(userId, savedGoal);
-                    
                     return savedGoal;
                 });
     }
@@ -167,8 +157,12 @@ public class MentalHealthGoalService {
         log.info("Goal {} completed by user {}. Completed in {} days.", 
                  goal.getId(), goal.getUserId(), goal.getDaysActive());
         
-        // Verificar logros al completar meta
-        achievementService.checkGoalCompletionAchievements(goal.getUserId(), goal);
+        // Desbloquear recompensas asociadas a esta meta
+        try {
+            customRewardService.unlockRewardsForMentalHealthGoal(goal.getId(), goal.getUserId());
+        } catch (Exception e) {
+            log.warn("Error unlocking rewards for MH goal {}: {}", goal.getId(), e.getMessage());
+        }
     }
 
     @Transactional
@@ -223,9 +217,6 @@ public class MentalHealthGoalService {
                 milestoneRepository.save(milestone);
                 
                 log.info("Milestone {} completed for goal {}", milestone.getId(), goal.getId());
-                
-                // Verificar logro de primer hito
-                achievementService.checkFirstMilestone(goal.getUserId());
             }
         }
     }
@@ -274,12 +265,9 @@ public class MentalHealthGoalService {
         Double avgProgress = goalRepository.getAverageProgressPercentage(userId);
         if (avgProgress == null) avgProgress = 0.0;
         
-        Long totalAchievements = achievementService.getTotalAchievements(userId);
-        Long totalPoints = achievementService.getTotalPoints(userId);
-        
         return new GoalStatistics(
                 totalGoals, activeGoals, completedGoals, failedGoals,
-                avgProgress, totalAchievements, totalPoints
+                avgProgress
         );
     }
 
@@ -290,9 +278,7 @@ public class MentalHealthGoalService {
             Long activeGoals,
             Long completedGoals,
             Long failedGoals,
-            Double averageProgress,
-            Long totalAchievements,
-            Long totalPoints
+            Double averageProgress
     ) {}
 }
 

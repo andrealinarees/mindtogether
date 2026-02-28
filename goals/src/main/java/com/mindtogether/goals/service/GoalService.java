@@ -3,6 +3,8 @@ package com.mindtogether.goals.service;
 import com.mindtogether.goals.client.HabitDTO;
 import com.mindtogether.goals.client.HabitsClient;
 import com.mindtogether.goals.model.Goal;
+import com.mindtogether.goals.model.CustomReward;
+import com.mindtogether.goals.repository.CustomRewardRepository;
 import com.mindtogether.goals.repository.GoalRepository;
 import feign.FeignException;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +24,7 @@ public class GoalService {
 
     private final GoalRepository goalRepository;
     private final HabitsClient habitsClient;
+    private final CustomRewardRepository customRewardRepository;
 
     public List<Goal> getAllGoals(String userId) {
         List<Goal> goals = goalRepository.findByUserId(userId);
@@ -159,6 +163,8 @@ public class GoalService {
                         goal.setStatus(Goal.GoalStatus.COMPLETED);
                         goal.setCompletedAt(java.time.LocalDateTime.now());
                         log.info("Goal {} completed by user {}", id, userId);
+                        // Desbloquear recompensas personalizadas asociadas
+                        unlockCustomRewards(goal.getId(), userId);
                     }
                     
                     return goalRepository.save(goal);
@@ -188,6 +194,8 @@ public class GoalService {
                     goal.setStatus(Goal.GoalStatus.COMPLETED);
                     goal.setCompletedAt(java.time.LocalDateTime.now());
                     log.info("Goal {} auto-completed after sync. Completions: {}", id, habitCompletions);
+                    // Desbloquear recompensas personalizadas asociadas
+                    unlockCustomRewards(goal.getId(), userId);
                 }
                 
                 return Optional.of(goalRepository.save(goal));
@@ -207,6 +215,8 @@ public class GoalService {
                     goal.setStatus(Goal.GoalStatus.COMPLETED);
                     goal.setCompletedAt(java.time.LocalDateTime.now());
                     log.info("Goal {} manually marked as completed by user {}", id, userId);
+                    // Desbloquear recompensas personalizadas asociadas
+                    unlockCustomRewards(goal.getId(), userId);
                     return goalRepository.save(goal);
                 });
     }
@@ -230,6 +240,8 @@ public class GoalService {
             if (goal.getCurrentProgress() >= goal.getTargetValue()) {
                 goal.setStatus(Goal.GoalStatus.COMPLETED);
                 goal.setCompletedAt(java.time.LocalDateTime.now());
+                // Desbloquear recompensas personalizadas asociadas
+                unlockCustomRewards(goal.getId(), goal.getUserId());
             } else {
                 goal.setStatus(Goal.GoalStatus.FAILED);
             }
@@ -243,6 +255,23 @@ public class GoalService {
 
     public Long getGoalCountByStatus(String userId, Goal.GoalStatus status) {
         return goalRepository.countByUserIdAndStatus(userId, status);
+    }
+
+    /**
+     * Desbloquea automáticamente las recompensas personalizadas asociadas a una meta completada.
+     */
+    private void unlockCustomRewards(Long goalId, String userId) {
+        List<CustomReward> rewards = customRewardRepository.findByUserIdAndGoalId(userId, goalId);
+        LocalDateTime now = LocalDateTime.now();
+        for (CustomReward reward : rewards) {
+            if (reward.getStatus() == CustomReward.RewardStatus.LOCKED) {
+                reward.setStatus(CustomReward.RewardStatus.UNLOCKED);
+                reward.setUnlockedAt(now);
+                customRewardRepository.save(reward);
+                log.info("🎁 Custom reward '{}' unlocked for user {} (goal {} completed)",
+                        reward.getName(), userId, goalId);
+            }
+        }
     }
 
     // Método interno para obtener metas por habitId sin userId (para llamadas entre servicios)

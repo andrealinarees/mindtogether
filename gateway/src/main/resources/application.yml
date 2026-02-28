@@ -51,7 +51,7 @@ spring:
             - Path=/api/habits/**
         
         - id: goals-service
-          uri: lb://goals-service
+          uri: lb://mental-health-goals-service
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
           predicates:
@@ -62,7 +62,7 @@ spring:
           filters:
             - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
           predicates:
-            - Path=/api/mental-health-goals/**,/api/achievements/**,/api/progress-snapshots/**
+            - Path=/api/mental-health-goals/**,/api/achievements/**,/api/progress-snapshots/**,/api/custom-rewards/**
         
         - id: badges-service
           uri: lb://badges-service

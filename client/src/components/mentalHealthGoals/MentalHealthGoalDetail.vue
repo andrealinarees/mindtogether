@@ -160,9 +160,22 @@
           </div>
 
           <!-- Reward Card -->
-          <div class="card mb-3" v-if="goal.rewardDescription">
+          <div class="card mb-3" v-if="goal.rewardDescription || linkedRewards.length > 0">
             <div class="card-header bg-white fw-bold"><i class="bi bi-gift"></i> Recompensa</div>
-            <div class="card-body"><p class="mb-0 small">{{ goal.rewardDescription }}</p></div>
+            <div class="card-body">
+              <p class="mb-0 small" v-if="goal.rewardDescription && linkedRewards.length === 0">{{ goal.rewardDescription }}</p>
+              <div v-if="linkedRewards.length > 0" class="d-flex flex-wrap gap-2">
+                <div v-for="r in linkedRewards" :key="r.id" class="d-flex align-items-center gap-2">
+                  <span class="fs-4">{{ r.icon }}</span>
+                  <div>
+                    <strong>{{ r.name }}</strong>
+                    <span v-if="r.status === 'UNLOCKED'" class="badge bg-success ms-2">🎉 Desbloqueada</span>
+                    <span v-else class="badge bg-secondary ms-2">🔒 Bloqueada</span>
+                    <div v-if="r.description" class="small text-muted">{{ r.description }}</div>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
 
 
@@ -176,11 +189,13 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import MentalHealthGoalRepository from '@/repositories/MentalHealthGoalRepository'
+import CustomRewardRepository from '@/repositories/CustomRewardRepository'
 
 const route = useRoute()
 
 const goal = ref(null)
 const milestones = ref([])
+const linkedRewards = ref([])
 const loading = ref(true)
 const error = ref(null)
 const incrementAmount = ref(1)
@@ -240,6 +255,12 @@ async function loadGoal() {
     ])
     goal.value = goalData
     milestones.value = milestonesData
+    // Cargar recompensas vinculadas
+    try {
+      linkedRewards.value = await CustomRewardRepository.findByMentalHealthGoal(route.params.id)
+    } catch (rewardErr) {
+      linkedRewards.value = []
+    }
   } catch (err) {
     console.error('Error loading goal:', err)
     error.value = 'No se pudo cargar la meta.'

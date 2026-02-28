@@ -36,8 +36,8 @@
       <div class="col-6 col-md-3">
         <div class="card text-center h-100 border-warning">
           <div class="card-body py-2">
-            <h4 class="text-warning mb-0">{{ stats.totalPoints || 0 }}</h4>
-            <small class="text-muted">Puntos</small>
+            <h4 class="text-warning mb-0">{{ stats.failedGoals || 0 }}</h4>
+            <small class="text-muted">Fallidas</small>
           </div>
         </div>
       </div>
