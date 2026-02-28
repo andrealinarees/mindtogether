@@ -1,13 +1,11 @@
 <template>
   <div class="container mt-4">
-    <div class="row mb-4">
-      <div class="col-12">
-        <h1>
-          <i class="bi bi-shield-check me-2"></i>Gestión de Comunidades (Administrador)
-        </h1>
-        <p class="text-muted">Supervisar, editar o eliminar comunidades y publicaciones inapropiadas</p>
-      </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2>
+        <i class="bi bi-shield-check me-2"></i>Gestión de Comunidades
+      </h2>
     </div>
+    <p class="text-muted">Supervisar, editar o eliminar comunidades y publicaciones inapropiadas</p>
 
     <!-- Buscador -->
     <div class="row mb-4">

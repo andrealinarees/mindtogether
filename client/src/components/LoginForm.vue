@@ -2,7 +2,7 @@
   <div class="login-container">
     <div class="login-card">
       <div class="logo-section">
-        <i class="bi bi-calendar-check-fill logo-icon"></i>
+        <i class="bi bi-heart-fill logo-icon"></i>
         <h1 class="app-title">MindTogether</h1>
         <p class="app-subtitle">Tu compañero para el bienestar mental</p>
       </div>

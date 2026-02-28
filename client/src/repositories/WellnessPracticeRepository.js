@@ -57,21 +57,23 @@ export default {
     return (await HTTP.get(`${resource}/categories`)).data
   },
 
-  // Categorías de bienestar mental predefinidas (para filtrado visual en el frontend)
+  // Categorías de bienestar mental predefinidas (idénticas a las de metas de salud mental)
   getWellnessCategories() {
     return [
-      { value: 'meditation', label: '🧘 Meditación', description: 'Prácticas de meditación y atención plena', color: '#009688' },
-      { value: 'breathing', label: '🌬️ Respiración', description: 'Ejercicios de respiración consciente', color: '#00BCD4' },
-      { value: 'journaling', label: '📝 Escritura Terapéutica', description: 'Diario emocional y escritura reflexiva', color: '#3F51B5' },
-      { value: 'exercise', label: '🏃 Ejercicio Físico', description: 'Actividad física para la salud mental', color: '#4CAF50' },
-      { value: 'sleep', label: '🌙 Higiene del Sueño', description: 'Rutinas para mejorar el descanso', color: '#1A237E' },
-      { value: 'gratitude', label: '🙏 Gratitud', description: 'Prácticas de gratitud y aprecio', color: '#FF9800' },
-      { value: 'social', label: '👥 Conexión Social', description: 'Fortalecer relaciones interpersonales', color: '#9C27B0' },
-      { value: 'nutrition', label: '🥗 Alimentación Consciente', description: 'Hábitos alimentarios saludables', color: '#8BC34A' },
-      { value: 'relaxation', label: '🛁 Relajación', description: 'Técnicas de relajación y desconexión', color: '#E91E63' },
-      { value: 'creative', label: '🎨 Expresión Creativa', description: 'Arte, música y creatividad como terapia', color: '#FF5722' },
-      { value: 'nature', label: '🌳 Contacto con la Naturaleza', description: 'Paseos y actividades al aire libre', color: '#2E7D32' },
-      { value: 'selfcare', label: '💆 Autocuidado', description: 'Rutinas de cuidado personal', color: '#F06292' }
+      { value: 'MINDFULNESS', label: 'Atención Plena', icon: '🧘', description: 'Meditación y presencia', color: '#009688' },
+      { value: 'PHYSICAL_ACTIVITY', label: 'Actividad Física', icon: '🏃', description: 'Ejercicio y movimiento', color: '#4CAF50' },
+      { value: 'SOCIAL_CONNECTION', label: 'Conexión Social', icon: '👥', description: 'Relaciones y vínculos', color: '#9C27B0' },
+      { value: 'EMOTIONAL_REGULATION', label: 'Regulación Emocional', icon: '❤️', description: 'Gestión de emociones', color: '#E91E63' },
+      { value: 'SLEEP_QUALITY', label: 'Calidad del Sueño', icon: '😴', description: 'Descanso y sueño', color: '#1A237E' },
+      { value: 'NUTRITION', label: 'Nutrición', icon: '🥗', description: 'Alimentación saludable', color: '#8BC34A' },
+      { value: 'CREATIVE_EXPRESSION', label: 'Expresión Creativa', icon: '🎨', description: 'Arte y creatividad', color: '#FF5722' },
+      { value: 'PERSONAL_GROWTH', label: 'Crecimiento Personal', icon: '🌱', description: 'Desarrollo personal', color: '#2E7D32' },
+      { value: 'STRESS_MANAGEMENT', label: 'Manejo del Estrés', icon: '😌', description: 'Reducir el estrés', color: '#FF9800' },
+      { value: 'GRATITUDE', label: 'Gratitud', icon: '🙏', description: 'Agradecimiento', color: '#F57C00' },
+      { value: 'SELF_CARE', label: 'Autocuidado', icon: '💆', description: 'Cuidado personal', color: '#F06292' },
+      { value: 'THERAPY_SUPPORT', label: 'Apoyo Terapéutico', icon: '💬', description: 'Terapia profesional', color: '#3F51B5' },
+      { value: 'JOURNALING', label: 'Diario Personal', icon: '📝', description: 'Escritura reflexiva', color: '#00BCD4' },
+      { value: 'OTHER', label: 'Otro', icon: '✨', description: 'Otras prácticas', color: '#9E9E9E' }
     ]
   },
 

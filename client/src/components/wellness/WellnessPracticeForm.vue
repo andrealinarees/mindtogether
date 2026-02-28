@@ -127,7 +127,7 @@
               <div class="mt-1">
                 <span class="badge bg-primary me-1">{{ suggestion.frequency === 'DAILY' ? 'Diario' : 'Semanal' }}</span>
                 <span class="badge" :class="suggestion.location === 'EXTERIOR' ? 'bg-success' : 'bg-secondary'">
-                  {{ suggestion.location === 'EXTERIOR' ? '🌳 Exterior' : '🏠 Interior' }}
+                  {{ suggestion.location === 'EXTERIOR' ? '🌳 Exterior' : 'Interior' }}
                 </span>
               </div>
             </a>
@@ -220,12 +220,12 @@ export default {
       }
     }
 
-    const loadCategories = async () => {
-      try {
-        categories.value = await WellnessPracticeRepository.getCategories()
-      } catch (error) {
-        console.error('Error cargando categorías:', error)
-      }
+    const loadCategories = () => {
+      categories.value = WellnessPracticeRepository.getWellnessCategories().map((cat, idx) => ({
+        id: cat.value,
+        name: `${cat.icon} ${cat.label}`,
+        color: cat.color
+      }))
     }
 
     const goBack = () => router.push('/wellness')

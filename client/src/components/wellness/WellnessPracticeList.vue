@@ -156,12 +156,11 @@ export default {
       }
     }
 
-    const loadCategories = async () => {
-      try {
-        categories.value = await WellnessPracticeRepository.getCategories()
-      } catch (error) {
-        console.error('Error loading categories:', error)
-      }
+    const loadCategories = () => {
+      categories.value = WellnessPracticeRepository.getWellnessCategories().map((cat) => ({
+        id: cat.value,
+        name: `${cat.icon} ${cat.label}`
+      }))
     }
 
     const applyFilters = () => {}
