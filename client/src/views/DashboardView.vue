@@ -73,35 +73,112 @@
       </template>
     </div>
 
-    <!-- Recordatorios del día -->
+    <!-- Noticias Positivas -->
+    <div class="row mb-4">
+      <div class="col-12">
+        <div class="card shadow-sm">
+          <div class="card-header bg-success text-white d-flex justify-content-between align-items-center">
+            <span><i class="bi bi-newspaper me-2"></i><strong>Noticias Positivas de Bienestar</strong></span>
+            <button class="btn btn-sm btn-outline-light" @click="refreshNews" :disabled="newsLoading">
+              <i class="bi bi-arrow-clockwise" :class="{ 'spin': newsLoading }"></i>
+            </button>
+          </div>
+          <div class="card-body">
+            <div v-if="newsLoading" class="text-center py-3">
+              <div class="spinner-border spinner-border-sm text-success" role="status"></div>
+              <span class="ms-2 text-muted">Cargando noticias...</span>
+            </div>
+            <div v-else class="row">
+              <div v-for="(news, index) in positiveNews" :key="index" class="col-md-6 col-lg-3 mb-3">
+                <div class="news-card p-3 h-100">
+                  <div class="news-icon mb-2">{{ news.icon }}</div>
+                  <h6 class="news-title mb-2">
+                    <a v-if="news.url" :href="news.url" target="_blank" class="text-decoration-none text-dark">
+                      {{ news.title }}
+                    </a>
+                    <span v-else>{{ news.title }}</span>
+                  </h6>
+                  <p class="news-description text-muted small mb-2">{{ news.description }}</p>
+                  <span class="badge bg-light text-success">{{ news.source }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Resumen del usuario + Estado de ánimo -->
     <div class="row mb-4">
       <div class="col-lg-6 mb-3">
         <div class="card shadow-sm h-100">
           <div class="card-header bg-primary text-white">
-            <i class="bi bi-calendar-day me-2"></i><strong>Momentos de Hoy</strong>
+            <i class="bi bi-bar-chart-line me-2"></i><strong>Tu Resumen Personal</strong>
           </div>
           <div class="card-body">
-            <div class="list-group list-group-flush">
-              <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
-                <div>
-                  <i class="bi bi-sunrise text-warning me-2 fs-5"></i>
-                  <strong>Meditación matutina</strong>
+            <div v-if="summaryLoading" class="text-center py-3">
+              <div class="spinner-border spinner-border-sm text-primary" role="status"></div>
+            </div>
+            <div v-else>
+              <!-- Metas -->
+              <div class="summary-section mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0"><i class="bi bi-trophy text-warning me-2"></i>Metas</h6>
+                  <router-link to="/mental-health-goals" class="btn btn-sm btn-outline-primary">Ver todas</router-link>
                 </div>
-                <span class="badge bg-success rounded-pill">10 min</span>
+                <div v-if="summaryGoals.length > 0" class="list-group list-group-flush">
+                  <div v-for="goal in summaryGoals.slice(0, 3)" :key="goal.id" class="list-group-item border-0 px-0 py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="text-truncate me-2">{{ goal.title }}</span>
+                      <span class="badge rounded-pill" :class="goal.status === 'COMPLETED' ? 'bg-success' : 'bg-warning'">
+                        {{ goal.status === 'COMPLETED' ? 'Completada' : 'En progreso' }}
+                      </span>
+                    </div>
+                    <div v-if="goal.progress !== undefined" class="progress mt-1" style="height: 5px;">
+                      <div class="progress-bar bg-warning" :style="{ width: goal.progress + '%' }"></div>
+                    </div>
+                  </div>
+                </div>
+                <p v-else class="text-muted small mb-0">No tienes metas activas. ¡Crea una para empezar!</p>
               </div>
-              <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
-                <div>
-                  <i class="bi bi-journal-text text-primary me-2 fs-5"></i>
-                  <strong>Escribir en el diario</strong>
+
+              <hr class="my-2">
+
+              <!-- Recompensas -->
+              <div class="summary-section mb-3">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0"><i class="bi bi-gift text-danger me-2"></i>Recompensas</h6>
+                  <router-link to="/rewards" class="btn btn-sm btn-outline-danger">Ver todas</router-link>
                 </div>
-                <span class="badge bg-info rounded-pill">Pendiente</span>
+                <div class="d-flex gap-3">
+                  <div class="text-center">
+                    <span class="fs-4 fw-bold text-success">{{ rewardsUnlocked }}</span>
+                    <small class="d-block text-muted">Desbloqueadas</small>
+                  </div>
+                  <div class="text-center">
+                    <span class="fs-4 fw-bold text-secondary">{{ rewardsTotal }}</span>
+                    <small class="d-block text-muted">Total</small>
+                  </div>
+                </div>
               </div>
-              <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
-                <div>
-                  <i class="bi bi-moon-stars text-info me-2 fs-5"></i>
-                  <strong>Reflexión nocturna</strong>
+
+              <hr class="my-2">
+
+              <!-- Prácticas de Bienestar -->
+              <div class="summary-section">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                  <h6 class="mb-0"><i class="bi bi-flower1 text-success me-2"></i>Prácticas de Bienestar</h6>
+                  <router-link to="/wellness" class="btn btn-sm btn-outline-success">Ver todas</router-link>
                 </div>
-                <span class="badge bg-secondary rounded-pill">Programado</span>
+                <div v-if="summaryPractices.length > 0" class="list-group list-group-flush">
+                  <div v-for="practice in summaryPractices.slice(0, 3)" :key="practice.id" class="list-group-item border-0 px-0 py-2">
+                    <div class="d-flex justify-content-between align-items-center">
+                      <span class="text-truncate me-2">{{ practice.name || practice.title }}</span>
+                      <span class="badge bg-success rounded-pill">{{ practice.category || 'Bienestar' }}</span>
+                    </div>
+                  </div>
+                </div>
+                <p v-else class="text-muted small mb-0">No tienes prácticas aún. ¡Explora las opciones!</p>
               </div>
             </div>
           </div>
@@ -176,6 +253,8 @@ import JournalRepository from '@/repositories/JournalRepository'
 import MentalHealthGoalRepository from '@/repositories/MentalHealthGoalRepository'
 import WellnessPracticeRepository from '@/repositories/WellnessPracticeRepository'
 import SupportCircleRepository from '@/repositories/SupportCircleRepository'
+import CustomRewardRepository from '@/repositories/CustomRewardRepository'
+import PositiveNewsRepository from '@/repositories/PositiveNewsRepository'
 import { notify } from '@/common/notifications'
 
 export default {
@@ -189,6 +268,17 @@ export default {
     const wellnessPractices = ref(0)
     const supportCircles = ref(0)
     const loading = ref(true)
+
+    // Noticias positivas
+    const positiveNews = ref([])
+    const newsLoading = ref(true)
+
+    // Resumen del usuario
+    const summaryGoals = ref([])
+    const summaryPractices = ref([])
+    const rewardsUnlocked = ref(0)
+    const rewardsTotal = ref(0)
+    const summaryLoading = ref(true)
 
     // Estado de ánimo
     const moodSelected = ref(false)
@@ -284,13 +374,15 @@ export default {
 
     const loadStatistics = async () => {
       loading.value = true
+      summaryLoading.value = true
 
       // Cargar todas las estadísticas en paralelo para mejor rendimiento
-      const [journals, goals, practices, circles] = await Promise.allSettled([
+      const [journals, goals, practices, circles, rewards] = await Promise.allSettled([
         JournalRepository.findAll(),
         MentalHealthGoalRepository.findActive(),
         WellnessPracticeRepository.findAll(),
-        SupportCircleRepository.findAll()
+        SupportCircleRepository.findAll(),
+        CustomRewardRepository.findAll()
       ])
 
       // Procesar entradas del diario
@@ -321,6 +413,19 @@ export default {
         supportCircles.value = 0
       }
 
+      // Procesar datos del resumen
+      if (goals.status === 'fulfilled' && Array.isArray(goals.value)) {
+        summaryGoals.value = goals.value
+      }
+      if (practices.status === 'fulfilled' && Array.isArray(practices.value)) {
+        summaryPractices.value = practices.value
+      }
+      if (rewards.status === 'fulfilled' && Array.isArray(rewards.value)) {
+        rewardsTotal.value = rewards.value.length
+        rewardsUnlocked.value = rewards.value.filter(r => r.status === 'UNLOCKED').length
+      }
+      summaryLoading.value = false
+
       // Verificar si ya se registró un estado de ánimo hoy para este usuario
       const today = new Date().toISOString().split('T')[0]
       const lastMoodDate = localStorage.getItem(getMoodStorageKey())
@@ -348,7 +453,22 @@ export default {
 
     onMounted(() => {
       loadStatistics()
+      loadNews()
     })
+
+    const loadNews = async () => {
+      newsLoading.value = true
+      try {
+        positiveNews.value = await PositiveNewsRepository.getPositiveNews(4)
+      } catch (e) {
+        positiveNews.value = PositiveNewsRepository.getLocalTips(4)
+      }
+      newsLoading.value = false
+    }
+
+    const refreshNews = () => {
+      loadNews()
+    }
 
     return {
       userName,
@@ -360,7 +480,15 @@ export default {
       moods,
       moodSelected,
       selectedMood,
-      selectMood
+      selectMood,
+      positiveNews,
+      newsLoading,
+      refreshNews,
+      summaryGoals,
+      summaryPractices,
+      rewardsUnlocked,
+      rewardsTotal,
+      summaryLoading
     }
   }
 }
@@ -541,5 +669,59 @@ export default {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* Estilos para las noticias positivas */
+.news-card {
+  background: #f8f9fa;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  border: 1px solid #e9ecef;
+}
+
+.news-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  background: #fff;
+}
+
+.news-icon {
+  font-size: 1.8rem;
+}
+
+.news-title {
+  font-size: 0.9rem;
+  font-weight: 600;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.news-description {
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 0.8rem;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Estilos para el resumen personal */
+.summary-section .list-group-item {
+  padding: 0.5rem 0;
+}
+
+.summary-section .progress {
+  border-radius: 3px;
 }
 </style>
