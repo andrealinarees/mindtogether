@@ -3,7 +3,7 @@
     <!-- Header -->
     <div class="d-flex justify-content-between align-items-center mb-4">
       <div>
-        <h2><i class="bi bi-heart-pulse-fill me-2"></i>Prácticas de Bienestar</h2>
+        <h2><i class="bi bi-flower1 me-2"></i>Prácticas de Bienestar</h2>
         <p class="text-muted mb-0">Cuida tu salud mental con prácticas diarias</p>
       </div>
       <router-link to="/wellness/new" class="btn btn-primary btn-lg">
