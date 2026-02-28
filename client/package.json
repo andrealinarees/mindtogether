@@ -1,8 +1,9 @@
 {
-  "name": "notebook-client",
-  "version": "0.0.0",
+  "name": "mindtogether-client",
+  "version": "1.0.0",
   "private": true,
   "type": "module",
+  "description": "MindTogether - Mental Health Platform Client",
   "engines": {
     "node": "^20.19.0 || >=22.12.0"
   },

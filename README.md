@@ -90,4 +90,4 @@ mindtogether/
 
 ## Licencia
 
-Proyecto académico desarrollado para la asignatura ASI — Universidade da Coruña.
+Proyecto de código abierto desarrollado para la comunidad de salud mental.

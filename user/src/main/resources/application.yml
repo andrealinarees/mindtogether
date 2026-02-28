@@ -52,6 +52,6 @@ management:
 logging:
   level:
     org: INFO
-    es.udc.asi: DEBUG
+    com.mindtogether: DEBUG
     feign:
       client: DEBUG

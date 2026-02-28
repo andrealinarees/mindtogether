@@ -19,6 +19,10 @@ import { getStore } from "@/common/store";
 
 import habitsRoutes from "@/components/habits/routes.js";
 import goalsRoutes from "@/components/goals/routes.js";
+import mentalHealthGoalsRoutes from "@/components/mentalHealthGoals/routes.js";
+import journalRoutes from "@/components/journal/routes.js";
+import wellnessRoutes from "@/components/wellness/routes.js";
+import supportCirclesRoutes from "@/components/supportCircles/routes.js";
 
 const routes = [
   {
@@ -97,7 +101,7 @@ const routes = [
     component: ErrorNotFoundView,
     meta: { public: true }
   }
-].concat(habitsRoutes, goalsRoutes);
+].concat(habitsRoutes, goalsRoutes, mentalHealthGoalsRoutes, journalRoutes, wellnessRoutes, supportCirclesRoutes);
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),

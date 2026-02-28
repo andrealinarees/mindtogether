@@ -11,7 +11,7 @@
         <relativePath/>
     </parent>
 
-    <groupId>es.udc.asi</groupId>
+    <groupId>com.mindtogether</groupId>
     <artifactId>habits</artifactId>
     <version>1.0.0</version>
     <name>habits-service</name>

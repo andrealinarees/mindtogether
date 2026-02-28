@@ -41,7 +41,7 @@ services: #Cada servicio es un contenedor Docker
         environment:
             - SPRING_CLOUD_CONSUL_HOST=consul
             - SPRING_CLOUD_CONSUL_PORT=8500
-            - SPRING_DATASOURCE_URL=jdbc:postgresql://database_goals:5432/goals_db
+            - SPRING_DATASOURCE_URL=jdbc:postgresql://database_mental_health_goals:5432/mental_health_goals_db
             - SPRING_DATASOURCE_USERNAME=postgres
             - SPRING_DATASOURCE_PASSWORD=postgres
         ports:
@@ -93,16 +93,16 @@ services: #Cada servicio es un contenedor Docker
             - habits_data:/var/lib/postgresql/data
         networks:
             - ms
-    database_goals:
+    database_mental_health_goals:
         image: postgres:14.1-alpine
         environment:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=postgres
-            - POSTGRES_DB=goals_db
+            - POSTGRES_DB=mental_health_goals_db
         ports:
             - "5458:5432"
         volumes:
-            - goals_data:/var/lib/postgresql/data
+            - mental_health_goals_data:/var/lib/postgresql/data
         networks:
             - ms
     database_community:
@@ -133,7 +133,7 @@ volumes:
         driver: local
     habits_data:  #Generamos un volumen con el contenido de la base de datos de hábitos
         driver: local
-    goals_data:  #Generamos un volumen con el contenido de la base de datos de metas
+    mental_health_goals_data:  #Generamos un volumen con el contenido de la base de datos de metas de salud mental
         driver: local
     community_data:  #Generamos un volumen con el contenido de la base de datos de comunidades
         driver: local

@@ -2,7 +2,7 @@
   <nav class="navbar navbar-expand-lg bg-body-tertiary">
     <div class="container-fluid">
       <router-link class="navbar-brand" to="/dashboard">
-        <i class="bi bi-calendar-check"></i> Habit Tracker
+        <i class="bi bi-heart-pulse"></i> MindTogether
       </router-link>
       <button
         class="navbar-toggler"
@@ -23,18 +23,28 @@
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/habits" active-class="active">
-              <i class="bi bi-list-check"></i> Hábitos
+            <router-link class="nav-link" to="/journal" active-class="active">
+              <i class="bi bi-journal-text"></i> Diario
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/goals" active-class="active">
+            <router-link class="nav-link" to="/mental-health-goals" active-class="active">
               <i class="bi bi-trophy"></i> Metas
             </router-link>
           </li>
           <li class="nav-item">
-            <router-link class="nav-link" to="/community" active-class="active">
-              <i class="bi bi-people"></i> Comunidad
+            <router-link class="nav-link" to="/wellness" active-class="active">
+              <i class="bi bi-flower1"></i> Prácticas
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/support-circles" active-class="active">
+              <i class="bi bi-people"></i> Círculos
+            </router-link>
+          </li>
+          <li class="nav-item">
+            <router-link class="nav-link" to="/achievements" active-class="active">
+              <i class="bi bi-award"></i> Logros
             </router-link>
           </li>
           <li class="nav-item" v-if="store.state.user.authority === 'ADMIN'">

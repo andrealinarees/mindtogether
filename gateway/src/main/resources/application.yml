@@ -124,6 +124,6 @@ logging:
     org.springframework.web.cors: TRACE
     org.springframework.cloud.gateway: TRACE
     org.springframework.security.web.server: TRACE
-    es.udc: TRACE
+    com.mindtogether: DEBUG
 
 

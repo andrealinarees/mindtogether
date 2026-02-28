@@ -11,11 +11,11 @@
         <relativePath/>
     </parent>
 
-    <groupId>es.udc.asi</groupId>
-    <artifactId>goals</artifactId>
+    <groupId>com.mindtogether</groupId>
+    <artifactId>mental-health-goals</artifactId>
     <version>1.0.0</version>
-    <name>goals-service</name>
-    <description>Goals Service for Habit Tracking Application</description>
+    <name>mental-health-goals-service</name>
+    <description>Mental Health Goals Service for MindTogether Platform</description>
 
     <properties>
         <java.version>17</java.version>

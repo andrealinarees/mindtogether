@@ -1,8 +1,8 @@
 spring:
   application:
-    name: goals-service
+    name: mental-health-goals-service
   datasource:
-    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/goals_db}
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/mental_health_goals_db}
     username: ${SPRING_DATASOURCE_USERNAME:postgres}
     password: ${SPRING_DATASOURCE_PASSWORD:postgres}
     driver-class-name: org.postgresql.Driver
@@ -23,6 +23,7 @@ spring:
         health-check-interval: 10s
         health-check-path: /actuator/health
         prefer-ip-address: true
+        service-name: mental-health-goals-service
 
 server:
   port: 9095

@@ -1,0 +1,10 @@
+package com.mindtogether.user.model.repository.util;
+
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+
+public abstract class GenericDaoJpa {
+  @PersistenceContext
+  protected EntityManager entityManager;
+}
+
