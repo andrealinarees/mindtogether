@@ -151,7 +151,7 @@
                     <div class="d-flex align-items-center">
                       <i class="bi bi-person-circle fs-4 text-secondary me-2"></i>
                       <div>
-                        <strong>{{ getAuthorDisplay(entry.authorUserId) }}</strong>
+                        <strong>{{ getAuthorDisplay(entry) }}</strong>
                         <span class="badge ms-2" :class="getEntryTypeBadge(entry.type)">
                           {{ getEntryTypeLabel(entry.type) }}
                         </span>
@@ -370,6 +370,8 @@ export default {
 
     // cache para mostrar nombres reales si el usuario no es anónimo
     const usersCache = ref({});
+    // cache de miembros con su estado de anonimato (del servidor)
+    const membersMap = ref({});
 
     const showEditEntryModal = ref(false);
     const showDeleteEntryModal = ref(false);
@@ -406,36 +408,62 @@ export default {
       return `anonymous_community_${route.params.id}`;
     };
 
-    const setAnonymousMode = (anonymous) => {
+    const setAnonymousMode = async (anonymous) => {
       isAnonymous.value = anonymous;
       localStorage.setItem(getAnonymousKey(), JSON.stringify(anonymous));
       showAnonymousModal.value = false;
+      try {
+        await CommunityRepository.updateMyAnonymous(route.params.id, { anonymous });
+        await loadMembers();
+      } catch (err) {
+        console.error('Error updating anonymous mode on server:', err);
+      }
     };
 
-    const toggleAnonymous = () => {
+    const toggleAnonymous = async () => {
       localStorage.setItem(getAnonymousKey(), JSON.stringify(isAnonymous.value));
+      try {
+        await CommunityRepository.updateMyAnonymous(route.params.id, { anonymous: isAnonymous.value });
+        await loadMembers();
+      } catch (err) {
+        console.error('Error updating anonymous mode on server:', err);
+      }
     };
 
-    const getAuthorDisplay = (authorUserId) => {
-      // convertir a string para comparar
+    const getAuthorDisplay = (entry) => {
+      const authorUserId = entry.authorUserId;
       const currentUserIdStr = String(currentUserId.value);
       const authorUserIdStr = String(authorUserId);
 
-      // Si el autor es el usuario actual y está en modo anónimo, mostrar "Anónimo"
-      if (currentUserIdStr === authorUserIdStr && isAnonymous.value) {
+      // Si el autor es el usuario actual
+      if (currentUserIdStr === authorUserIdStr) {
+        // Usar el isAnonymous de la entry o el estado actual del usuario
+        if (entry.isAnonymous || isAnonymous.value) {
+          return 'Anónimo 🎭 (Tú)';
+        }
+        const user = usersCache.value[authorUserId] || usersCache.value[authorUserIdStr];
+        if (user) {
+          return user.name || user.login || `Usuario ${authorUserId}`;
+        }
+        return `Usuario ${authorUserId}`;
+      }
+
+      // Para otros usuarios: primero comprobar si la entry fue marcada como anónima
+      if (entry.isAnonymous) {
         return 'Anónimo 🎭';
       }
-      // Para otros usuarios, siempre mostrar "Anónimo" (proteger privacidad de todos)
-      if (currentUserIdStr !== authorUserIdStr) {
-        return 'Anónimo 🎭';
+
+      // Si la entry no es anónima, comprobar el estado del miembro en el servidor
+      const member = membersMap.value[authorUserIdStr] || membersMap.value[authorUserId];
+      if (member) {
+        if (member.anonymous || !member.username) {
+          return 'Anónimo 🎭';
+        }
+        return member.username;
       }
-      
-      // Si llegamos aquí: es el usuario actual y no está en modo anónimo -> mostrar nombre
-      const user = usersCache.value[authorUserId] || usersCache.value[authorUserIdStr];
-      if (user) {
-        return user.name || user.login || `Usuario ${authorUserId}`;
-      }
-      return `Usuario ${authorUserId}`;
+
+      // Si no tenemos info del miembro, mostrar anónimo por seguridad
+      return 'Anónimo 🎭';
     };
 
     const loadCommunity = async () => {
@@ -445,15 +473,23 @@ export default {
       try {
         const id = route.params.id;
         community.value = await CommunityRepository.findById(id);
+        await loadMembers();
         await loadEntries();
 
-        // Verificar si ya eligió modo anónimo para esta comunidad
-        const savedPref = localStorage.getItem(getAnonymousKey());
-        if (savedPref !== null) {
-          isAnonymous.value = JSON.parse(savedPref);
+        // Sincronizar estado de anonimato desde el servidor
+        const currentMember = membersMap.value[String(currentUserId.value)];
+        if (currentMember) {
+          isAnonymous.value = currentMember.anonymous;
+          localStorage.setItem(getAnonymousKey(), JSON.stringify(currentMember.anonymous));
         } else {
-          // Primera vez que entra: mostrar modal
-          showAnonymousModal.value = true;
+          // Fallback a localStorage si no se encontró en miembros
+          const savedPref = localStorage.getItem(getAnonymousKey());
+          if (savedPref !== null) {
+            isAnonymous.value = JSON.parse(savedPref);
+          } else {
+            // Primera vez que entra: mostrar modal
+            showAnonymousModal.value = true;
+          }
         }
       } catch (err) {
         console.error('Error loading community:', err);
@@ -463,13 +499,26 @@ export default {
       }
     };
 
+    const loadMembers = async () => {
+      if (!community.value) return;
+      try {
+        const members = await CommunityRepository.getMembers(community.value.id);
+        membersMap.value = {};
+        members.forEach(m => {
+          membersMap.value[String(m.userId)] = m;
+        });
+      } catch (err) {
+        console.error('Error loading members:', err);
+      }
+    };
+
     const loadEntries = async () => {
       if (!community.value) return;
 
       loadingEntries.value = true;
       try {
         entries.value = await CommunityRepository.getEntries(community.value.id);
-        
+
         // cargar info de autores para poder mostrar nombres si no son anónimos
         const authorIds = [...new Set(entries.value.map(e => e.authorUserId))];
         await Promise.all(authorIds.map(id => loadUserInfo(id)));
@@ -544,7 +593,11 @@ export default {
       entryError.value = '';
 
       try {
-        await CommunityRepository.createEntry(community.value.id, newEntry.value);
+        const entryData = {
+          ...newEntry.value,
+          isAnonymous: isAnonymous.value
+        };
+        await CommunityRepository.createEntry(community.value.id, entryData);
         newEntry.value = {
           type: 'REFLECTION',
           content: ''

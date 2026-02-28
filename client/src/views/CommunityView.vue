@@ -373,6 +373,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de modo anónimo al unirse -->
+    <div v-if="showJoinAnonymousModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-incognito me-2"></i>¿Cómo quieres participar?
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="closeJoinAnonymousModal"></button>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-shield-lock display-3 text-info mb-3 d-block"></i>
+            <h5>Elige tu modo de participación en <strong>{{ communityToJoin?.name }}</strong></h5>
+            <p class="text-muted">
+              Puedes unirte de forma anónima. Los demás miembros verán tu nombre como <strong>"Anónimo"</strong> y no podrán identificarte.
+            </p>
+            <div class="alert alert-light border">
+              <i class="bi bi-info-circle me-2"></i>Puedes cambiar esta opción en cualquier momento desde dentro de la comunidad.
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-outline-primary btn-lg" @click="confirmJoin(false)">
+              <i class="bi bi-person-fill me-2"></i>Con mi nombre
+            </button>
+            <button type="button" class="btn btn-info btn-lg text-white" @click="confirmJoin(true)">
+              <i class="bi bi-incognito me-2"></i>Anónimo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -419,6 +451,8 @@ export default {
 
     const communityToDelete = ref(null);
     const communityToLeave = ref(null);
+    const communityToJoin = ref(null);
+    const showJoinAnonymousModal = ref(false);
 
     const displayedCommunities = computed(() => {
       const communities = activeTab.value === 'all' ? allCommunities.value : myCommunities.value;
@@ -532,9 +566,24 @@ export default {
       router.push({ name: 'CommunityEnter', params: { id } });
     };
 
-    const joinCommunity = async (communityId) => {
+    const joinCommunity = (communityId) => {
+      const community = allCommunities.value.find(c => c.id === communityId);
+      communityToJoin.value = community || { id: communityId, name: 'esta comunidad' };
+      showJoinAnonymousModal.value = true;
+    };
+
+    const closeJoinAnonymousModal = () => {
+      showJoinAnonymousModal.value = false;
+      communityToJoin.value = null;
+    };
+
+    const confirmJoin = async (anonymous) => {
+      if (!communityToJoin.value) return;
+      const communityId = communityToJoin.value.id;
+      closeJoinAnonymousModal();
+
       try {
-        await CommunityRepository.join(communityId);
+        await CommunityRepository.join(communityId, anonymous);
 
         // PRIMERO: Añadir al Set de IDs INMEDIATAMENTE
         myCommunitiesIds.value.add(communityId);
@@ -549,11 +598,14 @@ export default {
           }
         }
 
+        // Guardar preferencia de anonimato en localStorage para CommunityEnterView
+        localStorage.setItem(`anonymous_community_${communityId}`, JSON.stringify(anonymous));
+
         // TERCERO: Recargar desde el servidor para sincronizar
         await loadMyCommunities();
         await loadCommunities();
 
-        console.log('✅ Te has unido a la comunidad exitosamente');
+        console.log('✅ Te has unido a la comunidad exitosamente (anónimo:', anonymous, ')');
         console.log('📝 IDs actualizados:', Array.from(myCommunitiesIds.value));
         console.log('📋 Mis comunidades:', myCommunities.value.length);
 
@@ -818,6 +870,8 @@ export default {
       editingCommunity,
       communityToDelete,
       communityToLeave,
+      communityToJoin,
+      showJoinAnonymousModal,
       isFormValid,
       isEditFormValid,
       loadCommunities,
@@ -829,6 +883,8 @@ export default {
       viewCommunity,
       enterCommunity,
       joinCommunity,
+      confirmJoin,
+      closeJoinAnonymousModal,
       createCommunity,
       closeCreateModal,
       openEditModal,

@@ -38,9 +38,9 @@ export default {
     return await HTTP.delete(`${resource}/${id}`);
   },
 
-  // Unirse a una comunidad
-  async join(id) {
-    return (await HTTP.post(`${resource}/${id}/join`)).data;
+  // Unirse a una comunidad (anonymous: true/false)
+  async join(id, anonymous = false) {
+    return (await HTTP.post(`${resource}/${id}/join`, { anonymous })).data;
   },
 
   // Abandonar una comunidad

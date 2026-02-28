@@ -50,8 +50,8 @@ public class CommunityMemberService {
      * ✅ Cambiado: ahora recibe username y lo guarda
      */
     @Transactional
-    public CommunityMemberViewDTO joinCommunity(Long communityId, String userId, String username) {
-        log.info("User {} ({}) joining community {}", userId, username, communityId);
+    public CommunityMemberViewDTO joinCommunity(Long communityId, String userId, String username, boolean anonymous) {
+        log.info("User {} ({}) joining community {} (anonymous: {})", userId, username, communityId, anonymous);
 
         // Verificar que la comunidad existe
         Community community = communityRepository.findById(communityId)
@@ -65,8 +65,8 @@ public class CommunityMemberService {
         CommunityMember member = CommunityMember.builder()
                 .community(community)
                 .userId(userId)
-                .username(username)     // ✅ NUEVO
-                .anonymous(false)       // ✅ NUEVO (por defecto no anónimo)
+                .username(username)
+                .anonymous(anonymous)
                 .role(CommunityMember.MemberRole.MEMBER)
                 .build();
 

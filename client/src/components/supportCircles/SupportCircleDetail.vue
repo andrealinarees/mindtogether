@@ -186,7 +186,7 @@
       </div>
     </div>
 
-    <!-- Modal de modo anónimo -->
+    <!-- Modal de modo anónimo (al entrar a la vista) -->
     <div v-if="showAnonymousModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content">
@@ -211,6 +211,38 @@
             </button>
             <button type="button" class="btn btn-info btn-lg text-white" @click="setAnonymousMode(true)">
               <i class="bi bi-incognito me-2"></i>Participar anónimamente
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de modo anónimo al unirse -->
+    <div v-if="showJoinAnonymousModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-incognito me-2"></i>¿Cómo quieres participar?
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="showJoinAnonymousModal = false"></button>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-shield-lock display-3 text-info mb-3 d-block"></i>
+            <h5>Elige tu modo de participación en <strong>{{ circle?.name }}</strong></h5>
+            <p class="text-muted">
+              Puedes unirte de forma anónima. Los demás miembros verán tu nombre como <strong>"Anónimo"</strong> y no podrán identificarte.
+            </p>
+            <div class="alert alert-light border">
+              <i class="bi bi-info-circle me-2"></i>Puedes cambiar esta opción en cualquier momento.
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-outline-primary btn-lg" @click="confirmJoinCircle(false)">
+              <i class="bi bi-person-fill me-2"></i>Con mi nombre
+            </button>
+            <button type="button" class="btn btn-info btn-lg text-white" @click="confirmJoinCircle(true)">
+              <i class="bi bi-incognito me-2"></i>Anónimo
             </button>
           </div>
         </div>
@@ -339,6 +371,7 @@ const showEditEntryModal = ref(false)
 const showDeleteEntryModal = ref(false)
 const showLeaveModal = ref(false)
 const showAnonymousModal = ref(false)
+const showJoinAnonymousModal = ref(false)
 const entryToDelete = ref(null)
 
 const isAnonymous = ref(false)
@@ -373,16 +406,16 @@ const toggleAnonymous = async () => {
 const getEntryAuthorDisplay = (entry) => {
   const myUserId = currentUserId.value
   const entryUserId = String(entry.authorUserId) // Asegurar que sea string
-  
-  console.log('🔍 Entry display:', { 
-    isAnonymous: entry.isAnonymous, 
+
+  console.log('🔍 Entry display:', {
+    isAnonymous: entry.isAnonymous,
     entryUserId: entryUserId,
     myUserId: myUserId,
     authorUserName: entry.authorUserName,
     storeUserName: store.state.user.name,
     storeUserLogin: store.state.user.login
   })
-  
+
   // Si la entrada es anónima
   if (entry.isAnonymous === true) {
     // Si soy yo, indicarlo
@@ -391,24 +424,24 @@ const getEntryAuthorDisplay = (entry) => {
     }
     return 'Anónimo 🎭'
   }
-  
+
   // Si no es anónimo
   // Si soy yo, mostrar mi nombre del store
   if (entryUserId === myUserId) {
     return store.state.user.name || store.state.user.login || 'Usuario'
   }
-  
+
   // Si es otro usuario, mostrar el nombre que viene del backend o del caché
   if (entry.authorUserName && entry.authorUserName !== 'null' && entry.authorUserName !== 'undefined') {
     return entry.authorUserName
   }
-  
+
   // Intentar obtener del caché de usuarios
   const userInfo = usersCache.value[entryUserId] || usersCache.value[String(entryUserId)]
   if (userInfo) {
     return userInfo.name || userInfo.login || `Usuario ${entry.authorUserId}`
   }
-  
+
   return `Usuario ${entry.authorUserId}`
 }
 
@@ -452,7 +485,7 @@ const loadCircle = async () => {
         // Guardar en localStorage para próxima vez
         localStorage.setItem(getAnonymousKey(), JSON.stringify(isAnonymous.value))
       }
-      
+
       // Si no hay preferencia guardada aún, mostrar el modal
       const savedPref = localStorage.getItem(getAnonymousKey())
       if (savedPref === null) {
@@ -471,12 +504,12 @@ const loadMembers = async () => {
   loadingMembers.value = true
   try {
     members.value = await CommunityRepository.getMembers(circleId.value)
-    
+
     // Cargar nombres de usuario para miembros que no son anónimos y no tienen username
     const membersToLoad = members.value.filter(m => !m.anonymous && !m.username && m.userId)
     if (membersToLoad.length > 0) {
       await Promise.all(membersToLoad.map(m => loadUserInfo(m.userId)))
-      
+
       // Actualizar los miembros con los nombres cargados
       members.value = members.value.map(m => {
         if (!m.anonymous && !m.username && m.userId) {
@@ -525,12 +558,18 @@ const loadUserInfo = async (userId) => {
   }
 }
 
-const joinCircle = async () => {
+const joinCircle = () => {
+  showJoinAnonymousModal.value = true
+}
+
+const confirmJoinCircle = async (anonymous) => {
+  showJoinAnonymousModal.value = false
   try {
-    await CommunityRepository.join(circleId.value)
+    await CommunityRepository.join(circleId.value, anonymous)
     isMember.value = true
-    // Limpiar preferencia anterior para que muestre el modal
-    localStorage.removeItem(getAnonymousKey())
+    // Guardar preferencia de anonimato
+    isAnonymous.value = anonymous
+    localStorage.setItem(getAnonymousKey(), JSON.stringify(anonymous))
     await loadCircle()
   } catch (err) {
     console.error('Error joining circle:', err)

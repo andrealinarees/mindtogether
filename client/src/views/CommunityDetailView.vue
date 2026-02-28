@@ -236,7 +236,7 @@
                     <div class="d-flex align-items-center">
                       <i class="bi bi-person-circle fs-4 text-secondary me-2"></i>
                       <div>
-                        <strong>{{ getAuthorDisplay(entry.authorUserId) }}</strong>
+                        <strong>{{ getAuthorDisplay(entry) }}</strong>
                         <span class="badge ms-2" :class="getEntryTypeBadge(entry.type)">
                           {{ getEntryTypeLabel(entry.type) }}
                         </span>
@@ -526,6 +526,38 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal de modo anónimo al unirse -->
+    <div v-if="showJoinAnonymousModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-incognito me-2"></i>¿Cómo quieres participar?
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="showJoinAnonymousModal = false"></button>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-shield-lock display-3 text-info mb-3 d-block"></i>
+            <h5>Elige tu modo de participación en <strong>{{ community?.name }}</strong></h5>
+            <p class="text-muted">
+              Puedes unirte de forma anónima. Los demás miembros verán tu nombre como <strong>"Anónimo"</strong> y no podrán identificarte.
+            </p>
+            <div class="alert alert-light border">
+              <i class="bi bi-info-circle me-2"></i>Puedes cambiar esta opción en cualquier momento desde dentro de la comunidad.
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-outline-primary btn-lg" @click="confirmJoin(false)">
+              <i class="bi bi-person-fill me-2"></i>Con mi nombre
+            </button>
+            <button type="button" class="btn btn-info btn-lg text-white" @click="confirmJoin(true)">
+              <i class="bi bi-incognito me-2"></i>Anónimo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -558,6 +590,7 @@ export default {
     const showEditEntryModal = ref(false);
     const showDeleteEntryModal = ref(false);
     const showAnonymousModal = ref(false);
+    const showJoinAnonymousModal = ref(false);
 
     const isAnonymous = ref(false);
 
@@ -602,29 +635,69 @@ export default {
       return `anonymous_community_${route.params.id}`;
     };
 
-    const setAnonymousMode = (anonymous) => {
+    const setAnonymousMode = async (anonymous) => {
       isAnonymous.value = anonymous;
       localStorage.setItem(getAnonymousKey(), JSON.stringify(anonymous));
       showAnonymousModal.value = false;
+      try {
+        await CommunityRepository.updateMyAnonymous(route.params.id, { anonymous });
+        await loadMembers();
+      } catch (err) {
+        console.error('Error updating anonymous mode on server:', err);
+      }
     };
 
-    const toggleAnonymous = () => {
+    const toggleAnonymous = async () => {
       localStorage.setItem(getAnonymousKey(), JSON.stringify(isAnonymous.value));
+      try {
+        await CommunityRepository.updateMyAnonymous(route.params.id, { anonymous: isAnonymous.value });
+        await loadMembers();
+      } catch (err) {
+        console.error('Error updating anonymous mode on server:', err);
+      }
     };
 
-    const getAuthorDisplay = (authorUserId) => {
+    const getAuthorDisplay = (entryOrUserId) => {
+      // Puede recibir un objeto entry o un userId directo (para el creador)
+      const isEntry = typeof entryOrUserId === 'object' && entryOrUserId !== null;
+      const authorUserId = isEntry ? entryOrUserId.authorUserId : entryOrUserId;
+      const entryIsAnonymous = isEntry ? entryOrUserId.isAnonymous : false;
+
       const authorStr = String(authorUserId);
       const currentStr = String(currentUserId.value);
-      if (authorStr === currentStr && isAnonymous.value) {
+
+      // Si el autor es el usuario actual
+      if (authorStr === currentStr) {
+        if (entryIsAnonymous || isAnonymous.value) {
+          return 'Anónimo 🎭 (Tú)';
+        }
+        const user = usersCache.value[authorUserId] || usersCache.value[authorStr];
+        if (user) {
+          return user.name || user.login || `Usuario ${authorUserId}`;
+        }
+        return `Usuario ${authorUserId}`;
+      }
+
+      // Para otros usuarios: primero comprobar si la entry fue marcada como anónima
+      if (entryIsAnonymous) {
         return 'Anónimo 🎭';
       }
+
+      // Consultar su estado de anonimato desde la lista de miembros del servidor
+      const member = members.value.find(m => String(m.userId) === authorStr);
+      if (member) {
+        if (member.anonymous || !member.username) {
+          return 'Anónimo 🎭';
+        }
+        return member.username;
+      }
+
+      // Fallback: buscar en caché de usuarios
       const user = usersCache.value[authorUserId] || usersCache.value[authorStr];
       if (user) {
-        console.log(`📝 Displaying user ${authorUserId}:`, user.name || user.login);
         return user.name || user.login || `Usuario ${authorUserId}`;
       }
-      console.warn(`⚠️ User ${authorUserId} not found in cache`);
-      return `Usuario ${authorUserId}`;
+      return 'Anónimo 🎭';
     };
 
     const loadUserInfo = async (userId) => {
@@ -654,22 +727,29 @@ export default {
       try {
         const id = route.params.id;
         community.value = await CommunityRepository.findById(id);
-        
+
         // Cargar información del usuario actual primero
         if (currentUserId.value) {
           await loadUserInfo(currentUserId.value);
         }
-        
+
         await loadMembers();
         await loadEntries();
 
-        // Verificar si ya eligió modo anónimo para esta comunidad
-        const savedPref = localStorage.getItem(getAnonymousKey());
-        if (savedPref !== null) {
-          isAnonymous.value = JSON.parse(savedPref);
+        // Sincronizar estado de anonimato desde el servidor
+        const currentMember = members.value.find(m => String(m.userId) === String(currentUserId.value));
+        if (currentMember) {
+          isAnonymous.value = currentMember.anonymous;
+          localStorage.setItem(getAnonymousKey(), JSON.stringify(currentMember.anonymous));
         } else {
-          // Primera vez: mostrar modal
-          showAnonymousModal.value = true;
+          // Fallback a localStorage si no se encontró en miembros
+          const savedPref = localStorage.getItem(getAnonymousKey());
+          if (savedPref !== null) {
+            isAnonymous.value = JSON.parse(savedPref);
+          } else {
+            // Primera vez: mostrar modal
+            showAnonymousModal.value = true;
+          }
         }
       } catch (err) {
         console.error('Error loading community:', err);
@@ -687,12 +767,12 @@ export default {
       try {
         members.value = await CommunityRepository.getMembers(community.value.id);
         console.log(`👥 Found ${members.value.length} members:`, members.value);
-        
+
         // Cargar información de todos los usuarios únicos
         const uniqueUserIds = [...new Set(members.value.map(m => m.userId))];
         console.log('🔍 Unique user IDs:', uniqueUserIds);
         await Promise.all(uniqueUserIds.map(userId => loadUserInfo(userId)));
-        
+
         // También cargar el creador si no está en la lista
         if (community.value.creatorUserId) {
           await loadUserInfo(community.value.creatorUserId);
@@ -711,7 +791,7 @@ export default {
       loadingEntries.value = true;
       try {
         entries.value = await CommunityRepository.getEntries(community.value.id);
-        
+
         // Cargar información de los autores de las publicaciones
         const uniqueAuthorIds = [...new Set(entries.value.map(e => e.authorUserId))];
         await Promise.all(uniqueAuthorIds.map(userId => loadUserInfo(userId)));
@@ -722,12 +802,21 @@ export default {
       }
     };
 
-    const joinCommunity = async () => {
+    const joinCommunity = () => {
+      showJoinAnonymousModal.value = true;
+    };
+
+    const confirmJoin = async (anonymous) => {
+      showJoinAnonymousModal.value = false;
       try {
-        await CommunityRepository.join(community.value.id);
+        await CommunityRepository.join(community.value.id, anonymous);
         community.value.memberCount = (community.value.memberCount || 0) + 1;
+
+        // Guardar preferencia de anonimato en localStorage para CommunityEnterView
+        localStorage.setItem(`anonymous_community_${community.value.id}`, JSON.stringify(anonymous));
+
         await loadMembers();
-        console.log('✅ Te has unido a la comunidad exitosamente');
+        console.log('✅ Te has unido a la comunidad exitosamente (anónimo:', anonymous, ')');
       } catch (err) {
         console.error('Error joining community:', err);
         notify.error('Error al unirse a la comunidad. Por favor, inténtalo de nuevo.');
@@ -845,24 +934,26 @@ export default {
     };
 
     const getMemberDisplay = (member) => {
-      // convertir a string para comparar
       const currentUserIdStr = String(currentUserId.value)
       const memberUserIdStr = String(member.userId)
 
-      // si el usuario es anónimo en la comunidad, mostrar anónimo para otros
-      if (memberUserIdStr !== currentUserIdStr && isAnonymous.value) {
-        return 'Anónimo 🎭'
+      // Si es el usuario actual, mostrar su nombre o anónimo según su propia preferencia
+      if (memberUserIdStr === currentUserIdStr) {
+        if (isAnonymous.value) {
+          return 'Anónimo 🎭 (Tú)'
+        }
+        const user = usersCache.value[member.userId] || usersCache.value[memberUserIdStr]
+        if (user) {
+          return (user.name || user.login || `Usuario ${member.userId}`) + ' (Tú)'
+        }
+        return `Usuario ${member.userId} (Tú)`
       }
 
-      // buscar nombre en caché primero
-      const userId = member.userId
-      const user = usersCache.value[userId] || usersCache.value[memberUserIdStr]
-      
-      if (user) {
-        return user.name || user.login || `Usuario ${userId}`
+      // Para otros: usar el estado de anonimato del servidor (el campo del miembro)
+      if (member.anonymous || !member.username) {
+        return 'Anónimo 🎭'
       }
-      
-      return `Usuario ${userId}`
+      return member.username
     };
 
     const getRoleLabel = (role) => {
@@ -916,7 +1007,11 @@ export default {
       entryError.value = '';
 
       try {
-        await CommunityRepository.createEntry(community.value.id, newEntry.value);
+        const entryData = {
+          ...newEntry.value,
+          isAnonymous: isAnonymous.value
+        };
+        await CommunityRepository.createEntry(community.value.id, entryData);
         newEntry.value = {
           type: 'REFLECTION',
           content: ''
@@ -1022,6 +1117,7 @@ export default {
       showEditEntryModal,
       showDeleteEntryModal,
       showAnonymousModal,
+      showJoinAnonymousModal,
       updating,
       deleting,
       leaving,
@@ -1034,6 +1130,7 @@ export default {
       newEntry,
       editEntryForm,
       joinCommunity,
+      confirmJoin,
       openEditModal,
       closeEditModal,
       updateCommunity,

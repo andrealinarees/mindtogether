@@ -189,13 +189,15 @@ public class CommunityResource {
     public ResponseEntity<com.mindtogether.community.dto.CommunityMemberViewDTO> joinCommunity(
             @PathVariable Long id,
             @RequestHeader("X-User-Id") String userId,
-            @RequestHeader("X-User") String username
+            @RequestHeader("X-User") String username,
+            @RequestBody(required = false) JoinCommunityRequest joinRequest
     ) {
-        log.info("🤝 POST /api/communities/{}/join - user: {} ({})", id, userId, username);
+        boolean anonymous = joinRequest != null && joinRequest.anonymous();
+        log.info("🤝 POST /api/communities/{}/join - user: {} ({}), anonymous: {}", id, userId, username, anonymous);
 
         try {
-            var member = memberService.joinCommunity(id, userId, username);
-            log.info("✅ User {} joined community {} successfully", userId, id);
+            var member = memberService.joinCommunity(id, userId, username, anonymous);
+            log.info("✅ User {} joined community {} successfully (anonymous: {})", userId, id, anonymous);
             return ResponseEntity.status(HttpStatus.CREATED).body(member);
         } catch (IllegalArgumentException e) {
             log.warn("❌ Community {} not found", id);
@@ -205,6 +207,8 @@ public class CommunityResource {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
         }
     }
+
+    public record JoinCommunityRequest(boolean anonymous) {}
 
     /**
      * HU30 - Abandonar comunidad

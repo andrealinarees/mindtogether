@@ -80,6 +80,38 @@
         </router-link>
       </div>
     </div>
+
+    <!-- Modal de modo anónimo al unirse -->
+    <div v-if="showJoinAnonymousModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-incognito me-2"></i>¿Cómo quieres participar?
+            </h5>
+            <button type="button" class="btn-close btn-close-white" @click="showJoinAnonymousModal = false"></button>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-shield-lock display-3 text-info mb-3 d-block"></i>
+            <h5>Elige tu modo de participación en <strong>{{ circleToJoin?.name || 'este círculo' }}</strong></h5>
+            <p class="text-muted">
+              Puedes unirte de forma anónima. Los demás miembros verán tu nombre como <strong>"Anónimo"</strong> y no podrán identificarte.
+            </p>
+            <div class="alert alert-light border">
+              <i class="bi bi-info-circle me-2"></i>Puedes cambiar esta opción en cualquier momento.
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-outline-primary btn-lg" @click="confirmJoinCircle(false)">
+              <i class="bi bi-person-fill me-2"></i>Con mi nombre
+            </button>
+            <button type="button" class="btn btn-info btn-lg text-white" @click="confirmJoinCircle(true)">
+              <i class="bi bi-incognito me-2"></i>Anónimo
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -92,6 +124,8 @@ const loading = ref(false)
 const error = ref('')
 const allCircles = ref([])
 const availableCircles = ref([])
+const showJoinAnonymousModal = ref(false)
+const circleToJoin = ref(null)
 
 let searchTimeout = null
 
@@ -131,12 +165,22 @@ const handleSearch = () => {
   }, 300)
 }
 
-const joinCircle = async (circle) => {
+const joinCircle = (circle) => {
+  circleToJoin.value = circle
+  showJoinAnonymousModal.value = true
+}
+
+const confirmJoinCircle = async (anonymous) => {
+  if (!circleToJoin.value) return
+  const circle = circleToJoin.value
+  showJoinAnonymousModal.value = false
+  circleToJoin.value = null
   circle.joining = true
   try {
-    await CommunityRepository.join(circle.id)
+    await CommunityRepository.join(circle.id, anonymous)
     circle.isMember = true
     circle.memberCount = (circle.memberCount || 0) + 1
+    localStorage.setItem(`anonymous_circle_${circle.id}`, JSON.stringify(anonymous))
   } catch (err) {
     console.error('Error joining circle:', err)
     if (err.response?.status === 409) {
