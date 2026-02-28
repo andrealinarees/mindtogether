@@ -28,15 +28,10 @@
         </button>
       </div>
       <div class="card-body p-3">
-        <!-- Días de la semana -->
-        <div class="row g-1 text-center mb-2">
-          <div v-for="day in weekDays" :key="day" class="col fw-bold text-muted py-2">{{ day }}</div>
-        </div>
         <!-- Celdas del calendario -->
-        <div class="row g-1 text-center">
-          <div v-for="(cell, i) in calendarCells" :key="i" class="col p-0">
+        <div class="calendar-grid text-center">
+          <div v-for="(cell, i) in calendarCells" :key="i" class="p-0">
             <div
-              v-if="cell.day"
               class="calendar-cell border rounded p-2 position-relative"
               :class="{
                 'bg-primary text-white': cell.isToday,
@@ -54,7 +49,6 @@
                 </small>
               </div>
             </div>
-            <div v-else style="min-height: 70px;"></div>
           </div>
         </div>
       </div>
@@ -106,7 +100,6 @@ export default {
     const currentMonth = ref(new Date().getMonth() + 1)
     const daysWithEntries = ref({})
     const monthEntries = ref([])
-    const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
 
     const monthYearLabel = computed(() => {
       const d = new Date(currentYear.value, currentMonth.value - 1)
@@ -115,12 +108,7 @@ export default {
 
     const calendarCells = computed(() => {
       const cells = []
-      const firstDay = new Date(currentYear.value, currentMonth.value - 1, 1)
       const lastDay = new Date(currentYear.value, currentMonth.value, 0)
-      let startWeekday = firstDay.getDay() - 1
-      if (startWeekday < 0) startWeekday = 6
-
-      for (let i = 0; i < startWeekday; i++) cells.push({ day: null })
 
       const today = new Date()
       for (let d = 1; d <= lastDay.getDate(); d++) {
@@ -136,7 +124,6 @@ export default {
         })
       }
 
-      while (cells.length % 7 !== 0) cells.push({ day: null })
       return cells
     })
 
@@ -199,7 +186,7 @@ export default {
     onMounted(() => loadCalendar())
 
     return {
-      currentYear, currentMonth, weekDays,
+      currentYear, currentMonth,
       monthYearLabel, calendarCells, monthStats,
       prevMonth, nextMonth, handleCellClick, getMoodEmoji
     }
@@ -211,4 +198,13 @@ export default {
 .calendar-cell { transition: all 0.2s; }
 .calendar-cell:hover { transform: scale(1.02); box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
 .border-success { border-width: 2px !important; }
+.calendar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+.calendar-grid > div {
+  width: 80px;
+}
 </style>

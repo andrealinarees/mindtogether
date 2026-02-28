@@ -1,36 +1,87 @@
 <template>
-  <div class="container py-4">
-    <h1>{{ isEdit ? 'Editar' : 'Nueva' }} Entrada de Diario</h1>
-    
-    <form @submit.prevent="handleSubmit" class="mt-4">
-      <div class="mb-3">
-        <label class="form-label">¿Cómo te sientes hoy?</label>
-        <select class="form-select" v-model="form.mood">
-          <option value="">Selecciona tu estado de ánimo</option>
-          <option value="very_happy">😄 Muy feliz</option>
-          <option value="happy">🙂 Feliz</option>
-          <option value="neutral">😐 Neutral</option>
-          <option value="sad">😔 Triste</option>
-          <option value="very_sad">😢 Muy triste</option>
-        </select>
+  <div class="container py-4" style="max-width: 650px;">
+    <h2 class="text-center mb-4">
+      <i class="bi bi-pencil-square me-2"></i>{{ isEdit ? 'Editar entrada' : 'Escribir en el diario' }}
+    </h2>
+
+    <!-- Selector de fecha con flechas -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body d-flex justify-content-between align-items-center py-3">
+        <button class="btn btn-outline-primary btn-sm" @click="changeDay(-1)">
+          <i class="bi bi-chevron-left"></i>
+        </button>
+        <div class="text-center">
+          <h5 class="mb-0 text-capitalize">{{ formattedDate }}</h5>
+          <router-link to="/journal/calendar" class="text-muted small">
+            <i class="bi bi-calendar3 me-1"></i>Ir al calendario
+          </router-link>
+        </div>
+        <button class="btn btn-outline-primary btn-sm" @click="changeDay(1)">
+          <i class="bi bi-chevron-right"></i>
+        </button>
       </div>
-      
-      <div class="mb-3">
-        <label class="form-label">Escribe tus pensamientos</label>
-        <textarea class="form-control" v-model="form.content" rows="8" 
-                  placeholder="Comparte lo que sientes..."></textarea>
+    </div>
+
+    <!-- Estado de ánimo -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body text-center">
+        <label class="form-label fw-bold mb-3">¿Cómo te sientes?</label>
+        <div class="d-flex justify-content-center gap-3">
+          <div
+            v-for="mood in moodOptions"
+            :key="mood.value"
+            class="mood-option rounded-circle d-flex align-items-center justify-content-center"
+            :class="{ 'mood-selected': form.mood === mood.value }"
+            :style="form.mood === mood.value ? { borderColor: mood.color } : {}"
+            @click="form.mood = mood.value"
+            :title="mood.label"
+          >
+            <span style="font-size: 2.2rem;">{{ mood.emoji }}</span>
+          </div>
+        </div>
+        <small v-if="form.mood" class="text-muted mt-2 d-block">
+          {{ moodOptions.find(m => m.value === form.mood)?.label }}
+        </small>
       </div>
-      
-      <div class="mb-3">
-        <label class="form-label">Etiquetas</label>
-        <input type="text" class="form-control" v-model="form.tags" 
-               placeholder="Ej: ansiedad, trabajo, familia">
+    </div>
+
+    <!-- Título y descripción -->
+    <div class="card shadow-sm mb-4">
+      <div class="card-body">
+        <div class="mb-3">
+          <label class="form-label fw-bold">Título</label>
+          <input
+            type="text"
+            class="form-control"
+            v-model="form.title"
+            placeholder="Ej: Hoy me siento fatal, Buen día en el trabajo..."
+          />
+        </div>
+        <div>
+          <label class="form-label fw-bold">¿Qué quieres contar?</label>
+          <textarea
+            class="form-control"
+            v-model="form.content"
+            rows="5"
+            placeholder="Escribe lo que sientes... Ej: Me encuentro mal, no sé si dormir todo el día..."
+          ></textarea>
+        </div>
       </div>
-      
-      <div class="d-flex gap-2">
-        <button type="submit" class="btn btn-primary">Guardar</button>
-        <router-link to="/journal" class="btn btn-secondary">Cancelar</router-link>
-      </div>
+    </div>
+
+    <!-- Botones -->
+    <div class="d-flex gap-2 justify-content-center">
+      <button
+        class="btn btn-primary btn-lg px-4"
+        :disabled="!isFormValid || saving"
+        @click="saveEntry"
+      >
+        <i class="bi bi-check-circle me-1"></i>
+        {{ saving ? 'Guardando...' : 'Guardar' }}
+      </button>
+      <button class="btn btn-outline-secondary btn-lg" @click="goBack">
+        Cancelar
+      </button>
     </div>
   </div>
 </template>
@@ -46,30 +97,41 @@ export default {
     const router = useRouter()
     const route = useRoute()
     const saving = ref(false)
-    const loadingEntry = ref(false)
     const isEdit = computed(() => !!route.params.id)
     const moodOptions = JournalRepository.getMoodOptions()
 
-    const today = computed(() => new Date().toISOString().split('T')[0])
+    const toDateStr = (d) =>
+      `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 
     const form = ref({
-      date: today.value,
-      mood: '',
+      date: toDateStr(new Date()),
+      mood: route.query.mood || '',
       title: '',
       content: ''
     })
 
-    const isFormValid = computed(() => form.value.date && form.value.mood && form.value.title.trim())
+    const isFormValid = computed(() => form.value.mood && form.value.title.trim())
 
     const formattedDate = computed(() => {
       if (!form.value.date) return ''
       const [y, m, d] = form.value.date.split('-')
-      return new Date(y, m - 1, d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
+      return new Date(y, m - 1, d).toLocaleDateString('es-ES', {
+        weekday: 'long',
+        day: 'numeric',
+        month: 'long',
+        year: 'numeric'
+      })
     })
+
+    const changeDay = (offset) => {
+      const [y, m, d] = form.value.date.split('-').map(Number)
+      const current = new Date(y, m - 1, d)
+      current.setDate(current.getDate() + offset)
+      form.value.date = toDateStr(current)
+    }
 
     const loadEntry = async () => {
       if (!isEdit.value) return
-      loadingEntry.value = true
       try {
         const entry = await JournalRepository.findById(route.params.id)
         form.value = {
@@ -80,10 +142,7 @@ export default {
         }
       } catch (error) {
         console.error('Error cargando entrada:', error)
-        alert('Error al cargar la entrada')
         router.push('/journal')
-      } finally {
-        loadingEntry.value = false
       }
     }
 
@@ -109,24 +168,26 @@ export default {
 
     onMounted(() => loadEntry())
 
-    return { form, today, saving, loadingEntry, isEdit, moodOptions, isFormValid, formattedDate, saveEntry, goBack }
+    return { form, saving, isEdit, moodOptions, isFormValid, formattedDate, changeDay, saveEntry, goBack }
   }
 }
 </script>
 
 <style scoped>
 .mood-option {
-  border: 3px solid transparent;
+  width: 60px;
+  height: 60px;
+  border: 3px solid #dee2e6;
   cursor: pointer;
   transition: all 0.2s;
-  min-width: 100px;
 }
 .mood-option:hover {
-  transform: scale(1.05);
-  border-color: #dee2e6;
+  transform: scale(1.1);
+  border-color: #adb5bd;
 }
 .mood-selected {
-  transform: scale(1.1);
+  transform: scale(1.15);
+  border-width: 4px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 </style>

@@ -22,14 +22,32 @@
         <h4 class="text-primary mb-1">
           <i class="bi bi-calendar-heart me-2"></i>{{ todayFormatted }}
         </h4>
-        <p class="text-muted mb-3">{{ todayHasEntry ? '✅ Ya escribiste hoy' : '¿Cómo te sientes hoy?' }}</p>
-        <router-link v-if="!todayHasEntry" to="/journal/new" class="btn btn-primary">
-          <i class="bi bi-pencil me-1"></i>Escribir entrada de hoy
-        </router-link>
-        <router-link v-else :to="`/journal/${todayEntry.id}`" class="btn btn-outline-primary">
-          <i class="bi bi-eye me-1"></i>Ver entrada de hoy
-          <span class="ms-2">{{ getMoodEmoji(todayEntry.mood) }}</span>
-        </router-link>
+
+        <template v-if="todayHasEntry">
+          <p class="text-muted mb-3">✅ Ya escribiste hoy</p>
+          <router-link :to="`/journal/${todayEntry.id}`" class="btn btn-outline-primary">
+            <i class="bi bi-eye me-1"></i>Ver entrada de hoy
+            <span class="ms-2">{{ getMoodEmoji(todayEntry.mood) }}</span>
+          </router-link>
+        </template>
+
+        <template v-else>
+          <p class="text-muted mb-3">¿Cómo te sientes hoy?</p>
+          <div class="d-flex justify-content-center gap-3 mb-3">
+            <div
+              v-for="mood in moodOptions"
+              :key="mood.value"
+              class="mood-btn rounded-circle d-flex align-items-center justify-content-center"
+              :title="mood.label"
+              @click="startEntryWithMood(mood.value)"
+            >
+              <span style="font-size: 2rem;">{{ mood.emoji }}</span>
+            </div>
+          </div>
+          <router-link to="/journal/new" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil me-1"></i>Escribir sin seleccionar ánimo
+          </router-link>
+        </template>
       </div>
     </div>
 
@@ -44,22 +62,15 @@
           <i class="bi bi-chevron-right"></i>
         </button>
       </div>
-      <div class="card-body p-2">
-        <!-- Días de la semana -->
-        <div class="row g-0 text-center mb-1">
-          <div v-for="day in weekDays" :key="day" class="col fw-bold text-muted small py-1">{{ day }}</div>
-        </div>
-        <!-- Días del mes -->
-        <div class="row g-0 text-center">
-          <div v-for="(cell, i) in calendarCells" :key="i" class="col p-0" style="min-height: 45px;">
-            <div v-if="cell.day"
-              class="calendar-day mx-auto d-flex flex-column align-items-center justify-content-center rounded-circle"
+      <div class="card-body p-3">
+        <div class="mini-calendar-grid">
+          <div v-for="(cell, i) in calendarCells" :key="i">
+            <div
+              class="calendar-day d-flex flex-column align-items-center justify-content-center rounded-circle"
               :class="{
                 'bg-primary text-white': cell.isToday,
-                'calendar-has-entry': cell.hasEntry && !cell.isToday,
-                'text-muted': !cell.isCurrentMonth
+                'calendar-has-entry': cell.hasEntry && !cell.isToday
               }"
-              style="width: 38px; height: 38px; cursor: pointer; font-size: 0.85rem;"
               @click="cell.hasEntry ? viewDayEntry(cell) : null"
               :title="cell.hasEntry ? 'Ver entrada' : ''"
             >
@@ -128,7 +139,7 @@ export default {
     const currentYear = ref(new Date().getFullYear())
     const currentMonth = ref(new Date().getMonth() + 1)
     const daysWithEntries = ref({})
-    const weekDays = ['Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb', 'Dom']
+    const moodOptions = JournalRepository.getMoodOptions()
 
     const todayStr = computed(() => {
       const d = new Date()
@@ -149,18 +160,9 @@ export default {
 
     const calendarCells = computed(() => {
       const cells = []
-      const firstDay = new Date(currentYear.value, currentMonth.value - 1, 1)
       const lastDay = new Date(currentYear.value, currentMonth.value, 0)
-      // Lunes = 0, Domingo = 6
-      let startWeekday = firstDay.getDay() - 1
-      if (startWeekday < 0) startWeekday = 6
-
-      // Celdas vacías antes del primer día
-      for (let i = 0; i < startWeekday; i++) {
-        cells.push({ day: null })
-      }
-
       const today = new Date()
+
       for (let d = 1; d <= lastDay.getDate(); d++) {
         const dateStr = `${currentYear.value}-${String(currentMonth.value).padStart(2, '0')}-${String(d).padStart(2, '0')}`
         const isToday = today.getFullYear() === currentYear.value && today.getMonth() + 1 === currentMonth.value && today.getDate() === d
@@ -169,17 +171,12 @@ export default {
           day: d,
           dateStr,
           isToday,
-          isCurrentMonth: true,
           hasEntry: !!dayEntries,
           mood: dayEntries ? dayEntries[0].mood : null,
           entryId: dayEntries ? dayEntries[0].id : null
         })
       }
 
-      // Rellenar hasta completar filas de 7
-      while (cells.length % 7 !== 0) {
-        cells.push({ day: null })
-      }
 
       return cells
     })
@@ -218,6 +215,10 @@ export default {
       }
     }
 
+    const startEntryWithMood = (mood) => {
+      router.push({ path: '/journal/new', query: { mood } })
+    }
+
     const getMoodEmoji = (mood) => JournalRepository.getMoodByValue(mood).emoji
     const getMoodLabel = (mood) => JournalRepository.getMoodByValue(mood).label
     const getMoodColor = (mood) => JournalRepository.getMoodByValue(mood).color
@@ -234,10 +235,10 @@ export default {
     })
 
     return {
-      entries, weekDays, currentYear, currentMonth,
+      entries, currentYear, currentMonth, moodOptions,
       todayStr, todayFormatted, todayEntry, todayHasEntry,
       monthYearLabel, calendarCells,
-      prevMonth, nextMonth, viewDayEntry,
+      prevMonth, nextMonth, viewDayEntry, startEntryWithMood,
       getMoodEmoji, getMoodLabel, getMoodColor, formatDate
     }
   }
@@ -245,6 +246,31 @@ export default {
 </script>
 
 <style scoped>
+.mood-btn {
+  width: 55px;
+  height: 55px;
+  border: 3px solid #dee2e6;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.mood-btn:hover {
+  transform: scale(1.15);
+  border-color: #0d6efd;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+.mini-calendar-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 3px;
+  padding: 0;
+}
+.calendar-day {
+  width: 30px;
+  height: 30px;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
 .calendar-has-entry {
   background-color: #e8f5e9;
   border: 2px solid #4CAF50;
