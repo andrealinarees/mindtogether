@@ -28,13 +28,13 @@
     </div>
 
     <div v-else class="row g-4">
-      <div 
-        v-for="category in categories" 
+      <div
+        v-for="category in categories"
         :key="category.id"
         class="col-md-6 col-lg-4"
       >
         <div class="card category-card h-100 shadow-sm hover-card">
-          <div 
+          <div
             class="card-header text-white d-flex align-items-center"
             :style="{ backgroundColor: category.color }"
           >
@@ -45,9 +45,9 @@
           </div>
           <div class="card-body">
             <p class="card-text text-muted">{{ category.description }}</p>
-            
+
             <div class="mt-3">
-              <button 
+              <button
                 @click="viewHabitsByCategory(category.id)"
                 class="btn btn-sm btn-outline-primary w-100"
               >
@@ -153,8 +153,8 @@ export default {
 
     const viewHabitsByCategory = (categoryId) => {
       // Navegar a la vista de hábitos con filtro de categoría
-      router.push({ 
-        name: 'habits',
+      router.push({
+        path: '/habits',
         query: { category: categoryId }
       })
     }
