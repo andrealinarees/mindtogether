@@ -105,25 +105,6 @@
             />
           </div>
           <div class="form-group">
-            <label for="regCity">
-              <i class="bi bi-geo-alt"></i> Ciudad
-            </label>
-            <select
-              id="regCity"
-              class="form-control form-select"
-              v-model="registerData.city"
-              required
-            >
-              <option value="" disabled>Selecciona tu ciudad</option>
-              <option v-for="city in cityList" :key="city" :value="city">
-                {{ city }}
-              </option>
-            </select>
-            <small class="form-text text-muted">
-              Usaremos tu ciudad para mostrarte el clima local
-            </small>
-          </div>
-          <div class="form-group">
             <label for="regPassword">
               <i class="bi bi-lock"></i> Contraseña
             </label>
@@ -167,7 +148,6 @@
 <script>
 import auth from "../common/auth.js";
 import AccountRepository from "../repositories/AccountRepository.js";
-import { getCityList } from "../common/cities.js";
 
 export default {
   data() {
@@ -175,13 +155,11 @@ export default {
       auxLogin: null,
       auxPass: null,
       showRegister: false,
-      cityList: getCityList(), // Lista de ciudades ordenadas
       registerData: {
         name: "",
         login: "",
         email: "",
         phone: "",
-        city: "",
         password: "",
         passwordConfirm: ""
       }
@@ -230,7 +208,6 @@ export default {
           login: this.registerData.login,
           email: this.registerData.email,
           phone: this.registerData.phone,
-          city: this.registerData.city,
           password: this.registerData.password
         });
 

@@ -28,7 +28,7 @@
             </div>
             <div class="info-item">
               <label><i class="bi bi-person"></i> Usuario</label>
-              <p>@{{ user.login }}</p>
+              <p>{{ user.login }}</p>
             </div>
             <div class="info-item">
               <label><i class="bi bi-envelope"></i> Email</label>
@@ -37,10 +37,6 @@
             <div class="info-item">
               <label><i class="bi bi-phone"></i> Teléfono</label>
               <p>{{ user.phone || 'No especificado' }}</p>
-            </div>
-            <div class="info-item">
-              <label><i class="bi bi-geo-alt"></i> Ciudad</label>
-              <p>{{ user.city || 'No especificado' }}</p>
             </div>
             <div class="info-item">
               <label><i class="bi bi-shield-check"></i> Rol</label>
@@ -57,8 +53,8 @@
           <router-link to="/profile/edit" class="btn btn-primary">
             <i class="bi bi-pencil"></i> Editar perfil
           </router-link>
-          <router-link to="/habits" class="btn btn-outline-secondary">
-            <i class="bi bi-arrow-left"></i> Volver a hábitos
+          <router-link to="/dashboard" class="btn btn-outline-secondary">
+            <i class="bi bi-arrow-left"></i> Volver al menú
           </router-link>
         </div>
       </div>
@@ -195,6 +191,10 @@ export default {
   font-size: 16px;
   color: #333;
   font-weight: 500;
+}
+
+.info-item:last-child {
+  grid-column: 1 / -1;
 }
 
 .badge {

@@ -79,25 +79,6 @@
               />
             </div>
 
-            <div class="form-group">
-              <label for="city">
-                <i class="bi bi-geo-alt"></i> Ciudad
-              </label>
-              <select
-                id="city"
-                class="form-select"
-                v-model="formData.city"
-                required
-              >
-                <option value="">Selecciona tu ciudad</option>
-                <option v-for="city in cityList" :key="city" :value="city">
-                  {{ city }}
-                </option>
-              </select>
-              <small class="form-text text-muted">
-                Se usará para mostrar información meteorológica personalizada
-              </small>
-            </div>
           </div>
 
           <div v-if="successMessage" class="alert alert-success">
@@ -131,19 +112,16 @@
 <script>
 import AccountRepository from "../repositories/AccountRepository";
 import { getStore } from "../common/store";
-import { getCityList } from "../common/cities";
 
 export default {
   name: "ProfileEditView",
   data() {
     return {
-      cityList: getCityList(), // Lista de ciudades ordenadas
       formData: {
         name: "",
         login: "",
         email: "",
-        phone: "",
-        city: ""
+        phone: ""
       },
       loading: true,
       saving: false,
@@ -163,8 +141,7 @@ export default {
           name: user.name || "",
           login: user.login,
           email: user.email || "",
-          phone: user.phone || "",
-          city: user.city || ""
+          phone: user.phone || ""
         };
       } catch (e) {
         console.error("Error al cargar el perfil:", e);
@@ -179,7 +156,10 @@ export default {
       this.errorMessage = "";
 
       try {
-        await AccountRepository.updateAccount(this.formData);
+        // remove city from update payload if present
+        const payload = { ...this.formData };
+        delete payload.city;
+        await AccountRepository.updateAccount(payload);
 
         // Actualizar el store con el nuevo nombre
         const store = getStore();
