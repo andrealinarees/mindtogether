@@ -51,10 +51,10 @@
           <label class="btn btn-outline-primary" for="filter-all">Todas</label>
 
           <input type="radio" class="btn-check" name="statusFilter" id="filter-locked" value="LOCKED" v-model="statusFilter" @change="loadRewards" />
-          <label class="btn btn-outline-secondary" for="filter-locked">🔒 Bloqueadas</label>
+          <label class="btn btn-outline-secondary" for="filter-locked">Bloqueadas</label>
 
           <input type="radio" class="btn-check" name="statusFilter" id="filter-unlocked" value="UNLOCKED" v-model="statusFilter" @change="loadRewards" />
-          <label class="btn btn-outline-success" for="filter-unlocked">🎉 Desbloqueadas</label>
+          <label class="btn btn-outline-success" for="filter-unlocked">Desbloqueadas</label>
         </div>
       </div>
       <div class="col-md-6">
