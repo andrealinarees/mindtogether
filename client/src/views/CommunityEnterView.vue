@@ -24,7 +24,15 @@
             <i class="bi bi-arrow-left me-2"></i>Volver
           </button>
 
-          <div class="d-flex gap-2">
+          <div class="d-flex gap-2 align-items-center">
+            <!-- Toggle de modo anónimo -->
+            <div class="form-check form-switch me-2" title="Modo anónimo">
+              <input class="form-check-input" type="checkbox" id="anonymousToggle" v-model="isAnonymous" @change="toggleAnonymous">
+              <label class="form-check-label" for="anonymousToggle">
+                <i :class="isAnonymous ? 'bi bi-incognito text-info' : 'bi bi-person-fill text-secondary'"></i>
+                {{ isAnonymous ? 'Anónimo' : 'Visible' }}
+              </label>
+            </div>
             <button @click="viewDetails" class="btn btn-outline-info">
               <i class="bi bi-info-circle me-1"></i>Ver Detalle Completo
             </button>
@@ -143,7 +151,7 @@
                     <div class="d-flex align-items-center">
                       <i class="bi bi-person-circle fs-4 text-secondary me-2"></i>
                       <div>
-                        <strong>Usuario {{ entry.authorUserId }}</strong>
+                        <strong>{{ getAuthorDisplay(entry.authorUserId) }}</strong>
                         <span class="badge ms-2" :class="getEntryTypeBadge(entry.type)">
                           {{ getEntryTypeLabel(entry.type) }}
                         </span>
@@ -278,6 +286,37 @@
       </div>
     </div>
 
+    <!-- Modal de modo anónimo -->
+    <div v-if="showAnonymousModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-incognito me-2"></i>Modo de participación
+            </h5>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-shield-lock display-3 text-info mb-3 d-block"></i>
+            <h5>¿Cómo quieres participar en esta comunidad?</h5>
+            <p class="text-muted">
+              Puedes elegir participar de forma anónima. Tus publicaciones se mostrarán como <strong>"Anónimo 🎭"</strong> y los demás miembros no verán tu identidad.
+            </p>
+            <div class="alert alert-light border">
+              <i class="bi bi-info-circle me-2"></i>Puedes cambiar esta opción en cualquier momento.
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-outline-primary btn-lg" @click="setAnonymousMode(false)">
+              <i class="bi bi-person-fill me-2"></i>Participar con mi nombre
+            </button>
+            <button type="button" class="btn btn-info btn-lg text-white" @click="setAnonymousMode(true)">
+              <i class="bi bi-incognito me-2"></i>Participar anónimamente
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal de confirmación para salir -->
     <div v-if="showLeaveModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
       <div class="modal-dialog modal-dialog-centered">
@@ -330,6 +369,9 @@ export default {
     const showEditEntryModal = ref(false);
     const showDeleteEntryModal = ref(false);
     const showLeaveModal = ref(false);
+    const showAnonymousModal = ref(false);
+
+    const isAnonymous = ref(false);
 
     const creatingEntry = ref(false);
     const updatingEntry = ref(false);
@@ -355,6 +397,32 @@ export default {
       return community.value && community.value.creatorUserId === currentUserId.value;
     });
 
+    const getAnonymousKey = () => {
+      return `anonymous_community_${route.params.id}`;
+    };
+
+    const setAnonymousMode = (anonymous) => {
+      isAnonymous.value = anonymous;
+      localStorage.setItem(getAnonymousKey(), JSON.stringify(anonymous));
+      showAnonymousModal.value = false;
+    };
+
+    const toggleAnonymous = () => {
+      localStorage.setItem(getAnonymousKey(), JSON.stringify(isAnonymous.value));
+    };
+
+    const getAuthorDisplay = (authorUserId) => {
+      // Si el autor es el usuario actual y está en modo anónimo, mostrar "Anónimo"
+      if (authorUserId === currentUserId.value && isAnonymous.value) {
+        return 'Anónimo 🎭';
+      }
+      // Para otros usuarios, siempre mostrar "Anónimo" (proteger privacidad de todos)
+      if (authorUserId !== currentUserId.value) {
+        return 'Anónimo 🎭';
+      }
+      return `Usuario ${authorUserId}`;
+    };
+
     const loadCommunity = async () => {
       loading.value = true;
       error.value = '';
@@ -363,6 +431,15 @@ export default {
         const id = route.params.id;
         community.value = await CommunityRepository.findById(id);
         await loadEntries();
+
+        // Verificar si ya eligió modo anónimo para esta comunidad
+        const savedPref = localStorage.getItem(getAnonymousKey());
+        if (savedPref !== null) {
+          isAnonymous.value = JSON.parse(savedPref);
+        } else {
+          // Primera vez que entra: mostrar modal
+          showAnonymousModal.value = true;
+        }
       } catch (err) {
         console.error('Error loading community:', err);
         error.value = 'No se pudo cargar la información de la comunidad';
@@ -557,9 +634,11 @@ export default {
       entries,
       currentUserId,
       isCreator,
+      isAnonymous,
       showEditEntryModal,
       showDeleteEntryModal,
       showLeaveModal,
+      showAnonymousModal,
       creatingEntry,
       updatingEntry,
       deletingEntry,
@@ -571,6 +650,9 @@ export default {
       formatDateTime,
       getEntryTypeLabel,
       getEntryTypeBadge,
+      getAuthorDisplay,
+      setAnonymousMode,
+      toggleAnonymous,
       createEntry,
       openEditEntryModal,
       closeEditEntryModal,

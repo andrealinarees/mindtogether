@@ -24,7 +24,7 @@ public class DatabaseLoader implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        log.info("🌱 Inicializando datos de ejemplo para Comunidades...");
+        log.info("🌱 Inicializando datos de ejemplo para Círculos de Apoyo...");
 
         // Limpiar datos existentes (solo para desarrollo)
         entryRepository.deleteAll();
@@ -38,185 +38,146 @@ public class DatabaseLoader implements CommandLineRunner {
         // 4 = pedroff
         // 5 = ramón
 
-        // ========== COMUNIDAD 1: Runners Matutinos (creada por Laura - userId: 3) ==========
-        Community runners = Community.builder()
-                .name("Runners Matutinos")
-                .creationReason("Motivarnos mutuamente para correr cada mañana")
-                .description("Comunidad para personas que disfrutan correr temprano. Compartimos rutas, consejos y nos motivamos entre todos.")
+        // ========== CÍRCULO 1: Manejo de la Ansiedad (creado por Laura - userId: 3) ==========
+        Community ansiedad = Community.builder()
+                .name("Manejo de la Ansiedad")
+                .creationReason("Apoyarnos mutuamente para aprender a gestionar la ansiedad en el día a día")
+                .description("Espacio seguro para personas que experimentan ansiedad. Compartimos técnicas de respiración, estrategias de afrontamiento y nos acompañamos en los momentos difíciles. Aquí nadie juzga, todos aprendemos juntos.")
                 .creatorUserId("3") // Laura
                 .build();
-        runners = communityRepository.save(runners);
-        log.info("✅ Comunidad creada: {}", runners.getName());
+        ansiedad = communityRepository.save(ansiedad);
+        log.info("✅ Círculo creado: {}", ansiedad.getName());
 
         // Laura es miembro ADMIN (creadora)
-        CommunityMember lauraInRunners = CommunityMember.builder()
-                .community(runners)
-                .userId("3")
-                .role(CommunityMember.MemberRole.ADMIN)
-                .build();
-        memberRepository.save(lauraInRunners);
+        memberRepository.save(CommunityMember.builder()
+                .community(ansiedad).userId("3").role(CommunityMember.MemberRole.ADMIN).build());
 
-        // Ramón se une como MEMBER (userId: 5)
-        CommunityMember ramonInRunners = CommunityMember.builder()
-                .community(runners)
-                .userId("5")
-                .role(CommunityMember.MemberRole.MEMBER)
-                .build();
-        memberRepository.save(ramonInRunners);
+        // Ramón se une (userId: 5)
+        memberRepository.save(CommunityMember.builder()
+                .community(ansiedad).userId("5").role(CommunityMember.MemberRole.MEMBER).build());
 
-        // Publicación de Laura
-        CommunityEntry lauraPost1 = CommunityEntry.builder()
-                .community(runners)
-                .authorUserId("3")
-                .type(CommunityEntry.EntryType.MOTIVATION)
-                .content("¡Bienvenidos a Runners Matutinos! Espero que esta comunidad nos ayude a mantener la constancia. ¿Alguien se anima a una ruta de 5k este sábado?")
-                .createdAt(LocalDateTime.now().minusDays(5))
-                .build();
-        entryRepository.save(lauraPost1);
+        // Pedro se une (userId: 4)
+        memberRepository.save(CommunityMember.builder()
+                .community(ansiedad).userId("4").role(CommunityMember.MemberRole.MEMBER).build());
 
-        // Publicación de Ramón
-        CommunityEntry ramonPost1 = CommunityEntry.builder()
-                .community(runners)
-                .authorUserId("5")
-                .type(CommunityEntry.EntryType.REFLECTION)
-                .content("¡Cuenta conmigo Laura! He estado corriendo 3 veces por semana y cada vez me siento mejor.")
-                .createdAt(LocalDateTime.now().minusDays(4))
-                .build();
-        entryRepository.save(ramonPost1);
+        // Publicaciones
+        entryRepository.save(CommunityEntry.builder()
+                .community(ansiedad).authorUserId("3").type(CommunityEntry.EntryType.MOTIVATION)
+                .content("¡Bienvenidos al círculo! 💙 Recuerden que sentir ansiedad no nos define. Estamos aquí para apoyarnos. Compartan lo que les funciona para calmarse cuando sienten que la ansiedad aparece.")
+                .createdAt(LocalDateTime.now().minusDays(5)).build());
 
-        // ========== COMUNIDAD 2: Vida Saludable (creada por Pedro - userId: 4) ==========
-        Community vidaSaludable = Community.builder()
-                .name("Vida Saludable")
-                .creationReason("Compartir consejos sobre alimentación y bienestar")
-                .description("Espacio para compartir recetas saludables, tips de nutrición y apoyarnos en nuestro camino hacia una vida más sana.")
+        entryRepository.save(CommunityEntry.builder()
+                .community(ansiedad).authorUserId("5").type(CommunityEntry.EntryType.TIP)
+                .content("A mí me funciona mucho la técnica 5-4-3-2-1: nombrar 5 cosas que veo, 4 que toco, 3 que escucho, 2 que huelo y 1 que saboreo. Me ayuda a volver al presente cuando la ansiedad me invade.")
+                .createdAt(LocalDateTime.now().minusDays(4)).build());
+
+        entryRepository.save(CommunityEntry.builder()
+                .community(ansiedad).authorUserId("4").type(CommunityEntry.EntryType.REFLECTION)
+                .content("Hoy tuve un episodio de ansiedad en el trabajo pero logré controlarlo con respiración diafragmática. Hace un mes no hubiera podido. Pequeños avances 💪")
+                .createdAt(LocalDateTime.now().minusDays(3)).build());
+
+        // ========== CÍRCULO 2: Superando la Depresión Juntos (creado por Pedro - userId: 4) ==========
+        Community depresion = Community.builder()
+                .name("Superando la Depresión Juntos")
+                .creationReason("Crear un espacio de acompañamiento para quienes luchan contra la depresión")
+                .description("Círculo de apoyo para personas que atraviesan depresión o la han superado. Compartimos experiencias, logros por pequeños que sean, y nos recordamos que no estamos solos. La recuperación es posible.")
                 .creatorUserId("4") // Pedro
                 .build();
-        vidaSaludable = communityRepository.save(vidaSaludable);
-        log.info("✅ Comunidad creada: {}", vidaSaludable.getName());
+        depresion = communityRepository.save(depresion);
+        log.info("✅ Círculo creado: {}", depresion.getName());
 
-        // Pedro es miembro ADMIN (creador)
-        CommunityMember pedroInVida = CommunityMember.builder()
-                .community(vidaSaludable)
-                .userId("4")
-                .role(CommunityMember.MemberRole.ADMIN)
-                .build();
-        memberRepository.save(pedroInVida);
+        memberRepository.save(CommunityMember.builder()
+                .community(depresion).userId("4").role(CommunityMember.MemberRole.ADMIN).build());
 
-        // Laura también se une
-        CommunityMember lauraInVida = CommunityMember.builder()
-                .community(vidaSaludable)
-                .userId("3")
-                .role(CommunityMember.MemberRole.MEMBER)
-                .build();
-        memberRepository.save(lauraInVida);
+        memberRepository.save(CommunityMember.builder()
+                .community(depresion).userId("3").role(CommunityMember.MemberRole.MEMBER).build());
 
-        // Ramón también se une
-        CommunityMember ramonInVida = CommunityMember.builder()
-                .community(vidaSaludable)
-                .userId("5")
-                .role(CommunityMember.MemberRole.MEMBER)
-                .build();
-        memberRepository.save(ramonInVida);
+        entryRepository.save(CommunityEntry.builder()
+                .community(depresion).authorUserId("4").type(CommunityEntry.EntryType.MOTIVATION)
+                .content("Hoy logré levantarme temprano, ducharme y desayunar bien. Parece poco, pero para mí es un gran paso. No subestimen los pequeños logros. 🌅")
+                .createdAt(LocalDateTime.now().minusDays(3)).build());
 
-        // Publicación de Pedro
-        CommunityEntry pedroPost1 = CommunityEntry.builder()
-                .community(vidaSaludable)
-                .authorUserId("4")
-                .type(CommunityEntry.EntryType.TIP)
-                .content("¡Hola a todos! Hoy quiero compartir mi receta favorita de smoothie verde: espinacas, plátano, manzana y un poco de jengibre. ¡Está delicioso!")
-                .createdAt(LocalDateTime.now().minusDays(3))
-                .build();
-        entryRepository.save(pedroPost1);
+        entryRepository.save(CommunityEntry.builder()
+                .community(depresion).authorUserId("3").type(CommunityEntry.EntryType.TIP)
+                .content("Mi terapeuta me recomendó escribir cada noche 3 cosas buenas que pasaron en el día, por pequeñas que sean. Al principio costaba, pero ahora me ayuda a ver que no todo es gris.")
+                .createdAt(LocalDateTime.now().minusDays(2)).build());
 
-        // ========== COMUNIDAD 3: Meditación y Mindfulness (creada por Laura - userId: 3) ==========
-        Community meditacion = Community.builder()
-                .name("Meditación y Mindfulness")
-                .creationReason("Cultivar la paz interior y reducir el estrés")
-                .description("Comunidad dedicada a la práctica de meditación y mindfulness. Compartimos técnicas, experiencias y nos apoyamos en nuestro viaje hacia la calma mental.")
+        // ========== CÍRCULO 3: Mindfulness y Meditación (creado por Laura - userId: 3) ==========
+        Community mindfulness = Community.builder()
+                .name("Mindfulness y Meditación")
+                .creationReason("Cultivar la calma interior y reducir el estrés a través de prácticas de atención plena")
+                .description("Círculo dedicado a la meditación, mindfulness y técnicas de relajación. Compartimos guías, experiencias y nos motivamos para mantener una práctica constante. Ideal para principiantes y practicantes.")
                 .creatorUserId("3") // Laura
                 .build();
-        meditacion = communityRepository.save(meditacion);
-        log.info("✅ Comunidad creada: {}", meditacion.getName());
+        mindfulness = communityRepository.save(mindfulness);
+        log.info("✅ Círculo creado: {}", mindfulness.getName());
 
-        // Laura es miembro ADMIN (creadora)
-        CommunityMember lauraInMeditacion = CommunityMember.builder()
-                .community(meditacion)
-                .userId("3")
-                .role(CommunityMember.MemberRole.ADMIN)
-                .build();
-        memberRepository.save(lauraInMeditacion);
+        memberRepository.save(CommunityMember.builder()
+                .community(mindfulness).userId("3").role(CommunityMember.MemberRole.ADMIN).build());
 
-        // Publicación de Laura
-        CommunityEntry lauraPost2 = CommunityEntry.builder()
-                .community(meditacion)
-                .authorUserId("3")
-                .type(CommunityEntry.EntryType.QUESTION)
-                .content("¡Bienvenidos! Empecemos compartiendo: ¿Cuánto tiempo dedicas a meditar cada día? Yo estoy intentando hacer 10 minutos cada mañana.")
-                .createdAt(LocalDateTime.now().minusDays(2))
-                .build();
-        entryRepository.save(lauraPost2);
+        memberRepository.save(CommunityMember.builder()
+                .community(mindfulness).userId("5").role(CommunityMember.MemberRole.MEMBER).build());
 
-        // ========== COMUNIDAD 4: Productividad y Organización (creada por Ramón - userId: 5) ==========
-        Community productividad = Community.builder()
-                .name("Productividad y Organización")
-                .creationReason("Mejorar nuestras habilidades de gestión del tiempo")
-                .description("Para quienes buscan optimizar su tiempo, compartir herramientas de productividad y consejos de organización personal.")
+        entryRepository.save(CommunityEntry.builder()
+                .community(mindfulness).authorUserId("3").type(CommunityEntry.EntryType.QUESTION)
+                .content("¡Bienvenidos! 🧘 ¿Cuánto tiempo dedican a meditar cada día? Yo estoy intentando hacer 10 minutos cada mañana y noto una gran diferencia en mi nivel de estrés.")
+                .createdAt(LocalDateTime.now().minusDays(2)).build());
+
+        entryRepository.save(CommunityEntry.builder()
+                .community(mindfulness).authorUserId("5").type(CommunityEntry.EntryType.TIP)
+                .content("Para los que están empezando: prueben la meditación de escaneo corporal antes de dormir. Se trata de recorrer mentalmente cada parte del cuerpo relajándola. Duermo mucho mejor desde que lo hago. 🌙")
+                .createdAt(LocalDateTime.now().minusDays(1)).build());
+
+        // ========== CÍRCULO 4: Gestión del Estrés Laboral (creado por Ramón - userId: 5) ==========
+        Community estresLaboral = Community.builder()
+                .name("Gestión del Estrés Laboral")
+                .creationReason("Compartir estrategias para manejar el estrés y prevenir el burnout")
+                .description("Círculo para profesionales que buscan equilibrar su vida laboral y personal. Hablamos sobre límites saludables, desconexión digital, técnicas anti-burnout y cómo pedir ayuda cuando la carga es demasiada.")
                 .creatorUserId("5") // Ramón
                 .build();
-        productividad = communityRepository.save(productividad);
-        log.info("✅ Comunidad creada: {}", productividad.getName());
+        estresLaboral = communityRepository.save(estresLaboral);
+        log.info("✅ Círculo creado: {}", estresLaboral.getName());
 
-        // Ramón es miembro ADMIN (creador)
-        CommunityMember ramonInProductividad = CommunityMember.builder()
-                .community(productividad)
-                .userId("5")
-                .role(CommunityMember.MemberRole.ADMIN)
-                .build();
-        memberRepository.save(ramonInProductividad);
+        memberRepository.save(CommunityMember.builder()
+                .community(estresLaboral).userId("5").role(CommunityMember.MemberRole.ADMIN).build());
 
-        // Pedro se une
-        CommunityMember pedroInProductividad = CommunityMember.builder()
-                .community(productividad)
-                .userId("4")
-                .role(CommunityMember.MemberRole.MEMBER)
-                .build();
-        memberRepository.save(pedroInProductividad);
+        memberRepository.save(CommunityMember.builder()
+                .community(estresLaboral).userId("4").role(CommunityMember.MemberRole.MEMBER).build());
 
-        // Publicación de Ramón
-        CommunityEntry ramonPost2 = CommunityEntry.builder()
-                .community(productividad)
-                .authorUserId("5")
-                .type(CommunityEntry.EntryType.TIP)
-                .content("He empezado a usar la técnica Pomodoro y me está ayudando mucho. ¿Alguien más la utiliza?")
-                .createdAt(LocalDateTime.now().minusDays(1))
-                .build();
-        entryRepository.save(ramonPost2);
+        entryRepository.save(CommunityEntry.builder()
+                .community(estresLaboral).authorUserId("5").type(CommunityEntry.EntryType.TIP)
+                .content("Algo que me ayudó mucho: establecer una hora fija para dejar de mirar el correo del trabajo. Desde que puse ese límite a las 19h, mis noches son mucho más tranquilas. ⏰")
+                .createdAt(LocalDateTime.now().minusDays(1)).build());
 
-        // ========== COMUNIDAD 5: Finanzas Personales (creada por Pedro - userId: 4) ==========
-        Community finanzas = Community.builder()
-                .name("Finanzas Personales")
-                .creationReason("Aprender a gestionar mejor nuestro dinero")
-                .description("Comunidad para compartir consejos sobre ahorro, inversión y planificación financiera personal.")
+        entryRepository.save(CommunityEntry.builder()
+                .community(estresLaboral).authorUserId("4").type(CommunityEntry.EntryType.PROPOSAL)
+                .content("¿Qué les parece si compartimos cada viernes un 'logro de la semana'? Puede ser algo tan simple como haber dicho que no a una reunión innecesaria o haberse tomado un descanso.")
+                .createdAt(LocalDateTime.now().minusHours(12)).build());
+
+        // ========== CÍRCULO 5: Autoestima y Crecimiento Personal (creado por Pedro - userId: 4) ==========
+        Community autoestima = Community.builder()
+                .name("Autoestima y Crecimiento Personal")
+                .creationReason("Fortalecer nuestra autoestima y trabajar en nuestro desarrollo personal")
+                .description("Espacio para quienes quieren mejorar su relación consigo mismos. Compartimos ejercicios de autocompasión, afirmaciones positivas y celebramos cada paso de nuestro crecimiento.")
                 .creatorUserId("4") // Pedro
                 .build();
-        finanzas = communityRepository.save(finanzas);
-        log.info("✅ Comunidad creada: {}", finanzas.getName());
+        autoestima = communityRepository.save(autoestima);
+        log.info("✅ Círculo creado: {}", autoestima.getName());
 
-        // Pedro es miembro ADMIN (creador)
-        CommunityMember pedroInFinanzas = CommunityMember.builder()
-                .community(finanzas)
-                .userId("4")
-                .role(CommunityMember.MemberRole.ADMIN)
-                .build();
-        memberRepository.save(pedroInFinanzas);
+        memberRepository.save(CommunityMember.builder()
+                .community(autoestima).userId("4").role(CommunityMember.MemberRole.ADMIN).build());
+
+        entryRepository.save(CommunityEntry.builder()
+                .community(autoestima).authorUserId("4").type(CommunityEntry.EntryType.ACHIEVEMENT)
+                .content("🏆 Hoy me miré al espejo y me dije algo bonito en vez de criticarme. Parece tonto pero es un gran cambio para mí. La autocompasión es un músculo que se entrena.")
+                .createdAt(LocalDateTime.now().minusHours(6)).build());
 
         log.info("✅ Datos de ejemplo cargados correctamente:");
-        log.info("   - 5 comunidades creadas");
-        log.info("   - Laura (userId: 3) creó 2 comunidades y está en 3 total");
-        log.info("   - Ramón (userId: 5) creó 1 comunidad y está en 2 total");
-        log.info("   - Pedro (userId: 4) creó 2 comunidades y está en 3 total");
-        log.info("   - 5 publicaciones de ejemplo");
+        log.info("   - 5 círculos de apoyo creados");
+        log.info("   - Laura (userId: 3) creó 2 círculos y está en 4 total");
+        log.info("   - Ramón (userId: 5) creó 1 círculo y está en 3 total");
+        log.info("   - Pedro (userId: 4) creó 2 círculos y está en 4 total");
+        log.info("   - 10 publicaciones de ejemplo sobre salud mental");
     }
 }
-
 

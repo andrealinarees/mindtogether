@@ -122,7 +122,7 @@
                         <i class="bi bi-person-circle fs-2 text-secondary"></i>
                       </div>
                       <div class="flex-grow-1">
-                        <h6 class="mb-1">Usuario {{ member.userId }}</h6>
+                        <h6 class="mb-1">{{ getAuthorDisplay(member.userId) }}</h6>
                         <span class="badge" :class="getRoleBadgeClass(member.role)">
                           {{ getRoleLabel(member.role) }}
                         </span>
@@ -140,17 +140,25 @@
             <!-- Información del creador -->
             <div class="alert alert-info">
               <i class="bi bi-person-badge me-2"></i>
-              <strong>Creador:</strong> Usuario {{ community.creatorUserId }}
+              <strong>Creador:</strong> {{ getAuthorDisplay(community.creatorUserId) }}
             </div>
           </div>
         </div>
 
         <!-- Sección de Publicaciones (solo para miembros) -->
         <div v-if="isMember || isCreator" class="card shadow-lg">
-          <div class="card-header bg-success text-white py-3">
+          <div class="card-header bg-success text-white py-3 d-flex justify-content-between align-items-center">
             <h4 class="mb-0">
               <i class="bi bi-chat-dots-fill me-2"></i>Publicaciones de la Comunidad
             </h4>
+            <!-- Toggle de modo anónimo -->
+            <div class="form-check form-switch mb-0">
+              <input class="form-check-input" type="checkbox" id="anonToggleDetail" v-model="isAnonymous" @change="toggleAnonymous">
+              <label class="form-check-label text-white" for="anonToggleDetail">
+                <i :class="isAnonymous ? 'bi bi-incognito' : 'bi bi-person-fill'"></i>
+                {{ isAnonymous ? 'Anónimo' : 'Visible' }}
+              </label>
+            </div>
           </div>
           <div class="card-body p-4">
 
@@ -228,7 +236,7 @@
                     <div class="d-flex align-items-center">
                       <i class="bi bi-person-circle fs-4 text-secondary me-2"></i>
                       <div>
-                        <strong>Usuario {{ entry.authorUserId }}</strong>
+                        <strong>{{ getAuthorDisplay(entry.authorUserId) }}</strong>
                         <span class="badge ms-2" :class="getEntryTypeBadge(entry.type)">
                           {{ getEntryTypeLabel(entry.type) }}
                         </span>
@@ -270,6 +278,37 @@
                 Aún no hay publicaciones en esta comunidad. ¡Sé el primero en publicar!
               </div>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Modal de modo anónimo -->
+    <div v-if="showAnonymousModal" class="modal fade show d-block" tabindex="-1" style="background-color: rgba(0,0,0,0.5);">
+      <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+          <div class="modal-header bg-info text-white">
+            <h5 class="modal-title">
+              <i class="bi bi-incognito me-2"></i>Modo de participación
+            </h5>
+          </div>
+          <div class="modal-body text-center">
+            <i class="bi bi-shield-lock display-3 text-info mb-3 d-block"></i>
+            <h5>¿Cómo quieres participar en esta comunidad?</h5>
+            <p class="text-muted">
+              Puedes elegir participar de forma anónima. Tus publicaciones se mostrarán como <strong>"Anónimo 🎭"</strong> y los demás miembros no verán tu identidad.
+            </p>
+            <div class="alert alert-light border">
+              <i class="bi bi-info-circle me-2"></i>Puedes cambiar esta opción en cualquier momento.
+            </div>
+          </div>
+          <div class="modal-footer justify-content-center">
+            <button type="button" class="btn btn-outline-primary btn-lg" @click="setAnonymousMode(false)">
+              <i class="bi bi-person-fill me-2"></i>Participar con mi nombre
+            </button>
+            <button type="button" class="btn btn-info btn-lg text-white" @click="setAnonymousMode(true)">
+              <i class="bi bi-incognito me-2"></i>Participar anónimamente
+            </button>
           </div>
         </div>
       </div>
@@ -515,6 +554,9 @@ export default {
     const showLeaveModal = ref(false);
     const showEditEntryModal = ref(false);
     const showDeleteEntryModal = ref(false);
+    const showAnonymousModal = ref(false);
+
+    const isAnonymous = ref(false);
 
     const updating = ref(false);
     const deleting = ref(false);
@@ -553,6 +595,30 @@ export default {
       return members.value.some(m => m.userId === currentUserId.value);
     });
 
+    const getAnonymousKey = () => {
+      return `anonymous_community_${route.params.id}`;
+    };
+
+    const setAnonymousMode = (anonymous) => {
+      isAnonymous.value = anonymous;
+      localStorage.setItem(getAnonymousKey(), JSON.stringify(anonymous));
+      showAnonymousModal.value = false;
+    };
+
+    const toggleAnonymous = () => {
+      localStorage.setItem(getAnonymousKey(), JSON.stringify(isAnonymous.value));
+    };
+
+    const getAuthorDisplay = (authorUserId) => {
+      if (authorUserId === currentUserId.value && isAnonymous.value) {
+        return 'Anónimo 🎭';
+      }
+      if (authorUserId !== currentUserId.value) {
+        return 'Anónimo 🎭';
+      }
+      return `Usuario ${authorUserId}`;
+    };
+
     const loadCommunity = async () => {
       loading.value = true;
       error.value = '';
@@ -562,6 +628,15 @@ export default {
         community.value = await CommunityRepository.findById(id);
         await loadMembers();
         await loadEntries();
+
+        // Verificar si ya eligió modo anónimo para esta comunidad
+        const savedPref = localStorage.getItem(getAnonymousKey());
+        if (savedPref !== null) {
+          isAnonymous.value = JSON.parse(savedPref);
+        } else {
+          // Primera vez: mostrar modal
+          showAnonymousModal.value = true;
+        }
       } catch (err) {
         console.error('Error loading community:', err);
         error.value = 'No se pudo cargar la información de la comunidad';
@@ -868,11 +943,13 @@ export default {
       currentUserId,
       isCreator,
       isMember,
+      isAnonymous,
       showEditModal,
       showDeleteModal,
       showLeaveModal,
       showEditEntryModal,
       showDeleteEntryModal,
+      showAnonymousModal,
       updating,
       deleting,
       leaving,
@@ -900,6 +977,9 @@ export default {
       getRoleBadgeClass,
       getEntryTypeLabel,
       getEntryTypeBadge,
+      getAuthorDisplay,
+      setAnonymousMode,
+      toggleAnonymous,
       createEntry,
       openEditEntryModal,
       closeEditEntryModal,

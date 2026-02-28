@@ -195,7 +195,7 @@
                   class="form-control"
                   id="communityName"
                   v-model="newCommunity.name"
-                  placeholder="Ej: Runners Matutinos"
+                  placeholder="Ej: Manejo de la Ansiedad"
                   maxlength="100"
                   required
                 >
@@ -209,7 +209,7 @@
                   class="form-control"
                   id="creationReason"
                   v-model="newCommunity.creationReason"
-                  placeholder="Ej: Motivarnos para correr cada mañana"
+                  placeholder="Ej: Apoyarnos mutuamente para gestionar la ansiedad en el día a día"
                   maxlength="500"
                   required
                 >
@@ -265,7 +265,7 @@
                   class="form-control"
                   id="editCommunityName"
                   v-model="editingCommunity.name"
-                  placeholder="Ej: Runners Matutinos"
+                  placeholder="Ej: Manejo de la Ansiedad"
                   maxlength="100"
                   required
                 >
@@ -279,7 +279,7 @@
                   class="form-control"
                   id="editCreationReason"
                   v-model="editingCommunity.creationReason"
-                  placeholder="Ej: Motivarnos para correr cada mañana"
+                  placeholder="Ej: Apoyarnos mutuamente para gestionar la ansiedad en el día a día"
                   maxlength="500"
                   required
                 >
