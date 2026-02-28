@@ -185,6 +185,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import WellnessPracticeRepository from '@/repositories/WellnessPracticeRepository'
+import { notify, confirm } from '@/common/notifications'
 
 export default {
   name: 'WellnessPracticeDetail',
@@ -233,14 +234,19 @@ export default {
         practice.value.completedToday = !practice.value.completedToday
       } catch (error) {
         console.error('Error:', error)
-        alert('Error al actualizar la práctica')
+        notify.error('Error al actualizar la práctica')
       } finally {
         togglingCompletion.value = false
       }
     }
 
-    const confirmDelete = () => {
-      if (confirm(`¿Eliminar la práctica "${practice.value.name}"?\n\nEsta acción no se puede deshacer.`)) {
+    const confirmDelete = async () => {
+      const confirmed = await confirm(`¿Eliminar la práctica "${practice.value.name}"?\n\nEsta acción no se puede deshacer.`, {
+        title: '¿Eliminar práctica?',
+        confirmText: 'Eliminar',
+        danger: true
+      })
+      if (confirmed) {
         deletePractice()
       }
     }
@@ -252,7 +258,7 @@ export default {
         router.push('/wellness')
       } catch (error) {
         console.error('Error:', error)
-        alert('Error al eliminar la práctica')
+        notify.error('Error al eliminar la práctica')
       } finally {
         deleting.value = false
       }
@@ -267,7 +273,7 @@ export default {
         newCommentText.value = ''
       } catch (error) {
         console.error('Error:', error)
-        alert('Error al añadir reflexión')
+        notify.error('Error al añadir reflexión')
       } finally {
         addingComment.value = false
       }
@@ -292,20 +298,26 @@ export default {
         cancelEditComment()
       } catch (error) {
         console.error('Error:', error)
-        alert('Error al actualizar reflexión')
+        notify.error('Error al actualizar reflexión')
       } finally {
         updatingComment.value = false
       }
     }
 
     const confirmDeleteComment = async (comment) => {
-      if (!confirm('¿Eliminar esta reflexión?')) return
+      const confirmed = await confirm('¿Eliminar esta reflexión?', {
+        title: '¿Eliminar reflexión?',
+        confirmText: 'Eliminar',
+        danger: true
+      })
+      if (!confirmed) return
       try {
         await WellnessPracticeRepository.deleteComment(practice.value.id, comment.id)
         comments.value = comments.value.filter(c => c.id !== comment.id)
+        notify.success('Reflexión eliminada')
       } catch (error) {
         console.error('Error:', error)
-        alert('Error al eliminar reflexión')
+        notify.error('Error al eliminar reflexión')
       }
     }
 

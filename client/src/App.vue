@@ -107,13 +107,18 @@
     </div>
   </nav>
   <router-view />
+  <ToastNotification />
 </template>
 
 <script>
 import { getStore } from "./common/store";
 import auth from "./common/auth";
+import ToastNotification from "./components/ToastNotification.vue";
 
 export default {
+  components: {
+    ToastNotification
+  },
   data() {
     return {
       store: getStore()

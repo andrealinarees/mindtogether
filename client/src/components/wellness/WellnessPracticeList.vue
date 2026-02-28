@@ -85,6 +85,7 @@ import { ref, computed, onMounted, onActivated } from 'vue'
 import { useRoute } from 'vue-router'
 import WellnessPracticeRepository from '@/repositories/WellnessPracticeRepository'
 import WellnessPracticeCard from './WellnessPracticeCard.vue'
+import { notify } from '@/common/notifications'
 
 export default {
   name: 'WellnessPracticeList',
@@ -149,7 +150,7 @@ export default {
         practices.value = await WellnessPracticeRepository.findAll()
       } catch (error) {
         console.error('Error loading practices:', error)
-        alert('Error al cargar las prácticas')
+        notify.error('Error al cargar las prácticas')
       } finally {
         loading.value = false
       }

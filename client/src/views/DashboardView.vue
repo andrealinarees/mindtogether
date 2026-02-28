@@ -198,6 +198,7 @@ import JournalRepository from '@/repositories/JournalRepository'
 import MentalHealthGoalRepository from '@/repositories/MentalHealthGoalRepository'
 import WellnessPracticeRepository from '@/repositories/WellnessPracticeRepository'
 import SupportCircleRepository from '@/repositories/SupportCircleRepository'
+import { notify } from '@/common/notifications'
 
 export default {
   name: 'DashboardView',
@@ -251,28 +252,19 @@ export default {
     })
 
     const selectMood = async (mood) => {
-      console.log('🎯 Carita seleccionada:', mood.label)
-
       // Verificar si ya se registró un estado de ánimo hoy
       const today = new Date().toISOString().split('T')[0]
       const lastMoodDate = localStorage.getItem('lastMoodDate')
 
-      console.log('📅 Fecha de hoy:', today)
-      console.log('📅 Última fecha registrada:', lastMoodDate)
-
       if (lastMoodDate === today) {
         // Ya se registró un estado de ánimo hoy
-        console.log('⚠️ Ya hay un registro de hoy')
-        alert('Ya registraste tu estado de ánimo hoy. Solo puedes registrar uno por día.')
+        notify.warning('Ya registraste tu estado de ánimo hoy. Solo puedes registrar uno por día.')
         return
       }
 
       // PRIMERO: Mostrar el estado de ánimo seleccionado
-      console.log('👉 Estableciendo selectedMood y moodSelected')
       selectedMood.value = mood
       moodSelected.value = true
-      console.log('✅ moodSelected:', moodSelected.value)
-      console.log('✅ selectedMood:', selectedMood.value)
 
       // SEGUNDO: Guardar en localStorage inmediatamente
       localStorage.setItem('lastMoodDate', today)
@@ -295,14 +287,11 @@ export default {
       // TERCERO: Incrementar el contador de entradas
       journalEntries.value++
 
-      console.log('✓ Estado de ánimo registrado:', mood.label)
-
       // CUARTO: Intentar guardar en el backend (en segundo plano)
       try {
         await JournalRepository.create(moodEntry)
-        console.log('✓ Estado de ánimo guardado en el backend')
       } catch (backendError) {
-        console.log('⚠ Backend del diario no disponible (dato guardado localmente):', backendError.message)
+        // Backend no disponible, dato ya guardado localmente
       }
     }
 
@@ -326,9 +315,7 @@ export default {
       try {
         const journals = await JournalRepository.findAll()
         journalEntries.value = Array.isArray(journals) ? journals.length : 0
-        console.log('Entradas del diario cargadas:', journalEntries.value)
       } catch (error) {
-        console.error('Error cargando entradas del diario:', error)
         journalEntries.value = 0
       }
 
@@ -336,9 +323,7 @@ export default {
       try {
         const goals = await MentalHealthGoalRepository.findActive()
         activeGoals.value = Array.isArray(goals) ? goals.length : 0
-        console.log('Metas activas cargadas:', activeGoals.value)
       } catch (error) {
-        console.error('Error cargando metas activas:', error)
         activeGoals.value = 0
       }
 
@@ -346,9 +331,7 @@ export default {
       try {
         const practices = await WellnessPracticeRepository.findAll()
         wellnessPractices.value = Array.isArray(practices) ? practices.length : 0
-        console.log('Prácticas de bienestar cargadas:', wellnessPractices.value)
       } catch (error) {
-        console.error('Error cargando prácticas de bienestar:', error)
         wellnessPractices.value = 0
       }
 
@@ -356,9 +339,7 @@ export default {
       try {
         const circles = await SupportCircleRepository.findAll()
         supportCircles.value = Array.isArray(circles) ? circles.length : 0
-        console.log('Círculos de apoyo cargados:', supportCircles.value)
       } catch (error) {
-        console.error('Error cargando círculos de apoyo:', error)
         supportCircles.value = 0
       }
 
@@ -376,12 +357,9 @@ export default {
             if (mood) {
               selectedMood.value = mood
               moodSelected.value = true
-              console.log('Estado de ánimo del día cargado desde backend:', mood.label)
             }
           }
         } catch (error) {
-          console.log('No se pudo cargar del backend, buscando en localStorage')
-
           // Buscar en localStorage
           const savedMoods = JSON.parse(localStorage.getItem('moodHistory') || '[]')
           const todayMood = savedMoods.find(m => m.date === today)
@@ -391,7 +369,6 @@ export default {
             if (mood) {
               selectedMood.value = mood
               moodSelected.value = true
-              console.log('Estado de ánimo del día cargado desde localStorage:', mood.label)
             }
           }
         }
@@ -401,8 +378,7 @@ export default {
     }
 
     onMounted(() => {
-      // Aquí se cargarán las estadísticas reales de los servicios
-      // TODO: Conectar con los repositorios
+      loadStatistics()
     })
 
     return {

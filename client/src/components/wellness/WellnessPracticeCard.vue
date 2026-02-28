@@ -90,6 +90,7 @@
 import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import WellnessPracticeRepository from '@/repositories/WellnessPracticeRepository'
+import { notify, confirm } from '@/common/notifications'
 
 export default {
   name: 'WellnessPracticeCard',
@@ -120,7 +121,7 @@ export default {
         emit('updated')
       } catch (error) {
         console.error('Error al alternar completación:', error)
-        alert('Error al actualizar la práctica')
+        notify.error('Error al actualizar la práctica')
       } finally {
         togglingCompletion.value = false
       }
@@ -129,8 +130,13 @@ export default {
     const viewDetail = () => router.push(`/wellness/${props.practice.id}`)
     const editPractice = () => router.push(`/wellness/${props.practice.id}/edit`)
 
-    const confirmDelete = () => {
-      if (confirm(`¿Eliminar la práctica "${props.practice.name}"?\n\nEsta acción no se puede deshacer.`)) {
+    const confirmDelete = async () => {
+      const confirmed = await confirm(`¿Eliminar la práctica "${props.practice.name}"?\n\nEsta acción no se puede deshacer.`, {
+        title: '¿Eliminar práctica?',
+        confirmText: 'Eliminar',
+        danger: true
+      })
+      if (confirmed) {
         deletePractice()
       }
     }
@@ -140,9 +146,10 @@ export default {
       try {
         await WellnessPracticeRepository.delete(props.practice.id)
         emit('deleted')
+        notify.success('Práctica eliminada correctamente')
       } catch (error) {
         console.error('Error eliminando práctica:', error)
-        alert('Error al eliminar la práctica')
+        notify.error('Error al eliminar la práctica')
       } finally {
         deleting.value = false
       }

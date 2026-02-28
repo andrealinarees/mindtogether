@@ -145,6 +145,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import WellnessPracticeRepository from '@/repositories/WellnessPracticeRepository'
+import { notify } from '@/common/notifications'
 
 export default {
   name: 'WellnessPracticeForm',
@@ -184,7 +185,7 @@ export default {
         }
       } catch (error) {
         console.error('Error cargando práctica:', error)
-        alert('Error al cargar la práctica')
+        notify.error('No se pudo cargar la práctica')
         router.push('/wellness')
       } finally {
         loadingPractice.value = false
@@ -204,16 +205,16 @@ export default {
 
         if (isEditMode.value) {
           await WellnessPracticeRepository.update(route.params.id, data)
-          alert('Práctica actualizada correctamente')
+          notify.success('Práctica actualizada correctamente')
         } else {
           await WellnessPracticeRepository.create(data)
-          alert('Práctica creada correctamente')
+          notify.success('Práctica creada correctamente')
         }
         await router.push('/wellness')
         window.location.reload()
       } catch (error) {
         console.error('Error guardando:', error)
-        alert(`Error al ${isEditMode.value ? 'actualizar' : 'crear'} la práctica`)
+        notify.error(`Error al ${isEditMode.value ? 'actualizar' : 'crear'} la práctica`)
       } finally {
         saving.value = false
       }
