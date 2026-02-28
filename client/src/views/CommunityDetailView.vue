@@ -122,7 +122,7 @@
                         <i class="bi bi-person-circle fs-2 text-secondary"></i>
                       </div>
                       <div class="flex-grow-1">
-                        <h6 class="mb-1">{{ getAuthorDisplay(member.userId) }}</h6>
+                        <h6 class="mb-1">{{ getMemberDisplay(member) }}</h6>
                         <span class="badge" :class="getRoleBadgeClass(member.role)">
                           {{ getRoleLabel(member.role) }}
                         </span>
@@ -533,6 +533,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import CommunityRepository from '@/repositories/CommunityRepository';
+import UserRepository from '@/repositories/UserRepository';
 import { notify } from '@/common/notifications';
 
 export default {
@@ -549,6 +550,7 @@ export default {
     const members = ref([]);
     const entries = ref([]);
     const currentUserId = ref(localStorage.getItem('userId'));
+    const usersCache = ref({});
 
     const showEditModal = ref(false);
     const showDeleteModal = ref(false);
@@ -611,13 +613,45 @@ export default {
     };
 
     const getAuthorDisplay = (authorUserId) => {
-      if (authorUserId === currentUserId.value && isAnonymous.value) {
+      // Convertir ambos a string para comparación
+      const currentUserIdStr = String(currentUserId.value);
+      const authorUserIdStr = String(authorUserId);
+      
+      if (authorUserIdStr === currentUserIdStr && isAnonymous.value) {
         return 'Anónimo 🎭';
       }
-      if (authorUserId !== currentUserId.value) {
+      if (authorUserIdStr !== currentUserIdStr) {
         return 'Anónimo 🎭';
       }
+      // Si no es anónimo, mostrar el nombre real del usuario
+      // Buscar en caché usando ambos formatos (string y number)
+      const user = usersCache.value[authorUserId] || usersCache.value[authorUserIdStr];
+      if (user) {
+        console.log(`📝 Displaying user ${authorUserId}:`, user.name || user.login);
+        return user.name || user.login || `Usuario ${authorUserId}`;
+      }
+      console.warn(`⚠️ User ${authorUserId} not found in cache`);
       return `Usuario ${authorUserId}`;
+    };
+
+    const loadUserInfo = async (userId) => {
+      const userIdStr = String(userId);
+      console.log(`🔍 Checking user ${userId} in cache...`);
+      // Verificar si ya está en caché (con cualquier formato)
+      if (!userId || usersCache.value[userId] || usersCache.value[userIdStr]) {
+        console.log(`⏭️ User ${userId} already in cache, skipping`);
+        return; // Ya está en caché
+      }
+      console.log(`📥 Fetching user ${userId} from backend...`);
+      try {
+        const user = await UserRepository.findOne(userId);
+        // Guardar con ambos formatos para máxima compatibilidad
+        usersCache.value[userId] = user;
+        usersCache.value[userIdStr] = user;
+        console.log(`✅ Loaded user ${userId}:`, user);
+      } catch (err) {
+        console.error(`❌ Error loading user ${userId}:`, err);
+      }
     };
 
     const loadCommunity = async () => {
@@ -627,6 +661,12 @@ export default {
       try {
         const id = route.params.id;
         community.value = await CommunityRepository.findById(id);
+        
+        // Cargar información del usuario actual primero
+        if (currentUserId.value) {
+          await loadUserInfo(currentUserId.value);
+        }
+        
         await loadMembers();
         await loadEntries();
 
@@ -650,8 +690,21 @@ export default {
       if (!community.value) return;
 
       loadingMembers.value = true;
+      console.log('👥 Loading members...');
       try {
         members.value = await CommunityRepository.getMembers(community.value.id);
+        console.log(`👥 Found ${members.value.length} members:`, members.value);
+        
+        // Cargar información de todos los usuarios únicos
+        const uniqueUserIds = [...new Set(members.value.map(m => m.userId))];
+        console.log('🔍 Unique user IDs:', uniqueUserIds);
+        await Promise.all(uniqueUserIds.map(userId => loadUserInfo(userId)));
+        
+        // También cargar el creador si no está en la lista
+        if (community.value.creatorUserId) {
+          await loadUserInfo(community.value.creatorUserId);
+        }
+        console.log('📖 Users cache:', usersCache.value);
       } catch (err) {
         console.error('Error loading members:', err);
       } finally {
@@ -665,6 +718,10 @@ export default {
       loadingEntries.value = true;
       try {
         entries.value = await CommunityRepository.getEntries(community.value.id);
+        
+        // Cargar información de los autores de las publicaciones
+        const uniqueAuthorIds = [...new Set(entries.value.map(e => e.authorUserId))];
+        await Promise.all(uniqueAuthorIds.map(userId => loadUserInfo(userId)));
       } catch (err) {
         console.error('Error loading entries:', err);
       } finally {
@@ -794,9 +851,20 @@ export default {
       });
     };
 
+    const getMemberDisplay = (member) => {
+      const userId = String(member.userId);
+      const user = usersCache.value[userId] || usersCache.value[member.userId];
+      
+      if (user) {
+        return user.name || user.login || `Usuario ${userId}`;
+      }
+      
+      return `Usuario ${userId}`;
+    };
+
     const getRoleLabel = (role) => {
       const labels = {
-        'ADMIN': 'Administrador',
+        'ADMIN': 'Moderador',
         'MODERATOR': 'Moderador',
         'MEMBER': 'Miembro'
       };
@@ -974,6 +1042,7 @@ export default {
       leaveCommunity,
       formatDate,
       formatDateTime,
+      getMemberDisplay,
       getRoleLabel,
       getRoleBadgeClass,
       getEntryTypeLabel,

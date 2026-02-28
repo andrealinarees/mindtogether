@@ -134,7 +134,6 @@ router.beforeEach((to, from, next) => {
         }
       } else {
         // usuario no está logueado, no puede acceder a la página
-        alert("Esta página requiere autenticación");
         next("/");
       }
     } else {

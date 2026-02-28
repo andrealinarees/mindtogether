@@ -70,7 +70,22 @@ public class CommunityService {
     }
 
     public Optional<Community> getCommunityById(Long id) {
-        return communityRepository.findById(id);
+        Optional<Community> communityOpt = communityRepository.findById(id);
+        
+        if (communityOpt.isPresent()) {
+            Community community = communityOpt.get();
+            
+            // Calcular y establecer los contadores
+            Long memberCount = communityRepository.countMembersByCommunityId(id);
+            Long entryCount = communityRepository.countEntriesByCommunityId(id);
+            
+            community.setMemberCountCache(memberCount != null ? memberCount.intValue() : 0);
+            community.setEntryCountCache(entryCount != null ? entryCount.intValue() : 0);
+            
+            log.info("✅ Community {} has {} members and {} entries", id, memberCount, entryCount);
+        }
+        
+        return communityOpt;
     }
 
     public List<Community> searchCommunities(String searchTerm) {
