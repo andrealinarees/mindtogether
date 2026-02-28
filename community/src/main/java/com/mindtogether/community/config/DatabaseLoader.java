@@ -50,15 +50,30 @@ public class DatabaseLoader implements CommandLineRunner {
 
         // Laura es miembro ADMIN (creadora)
         memberRepository.save(CommunityMember.builder()
-                .community(ansiedad).userId("3").role(CommunityMember.MemberRole.ADMIN).build());
+                .community(ansiedad)
+                .userId("3")
+                .username("laura")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.ADMIN)
+                .build());
 
         // Ramón se une (userId: 5)
         memberRepository.save(CommunityMember.builder()
-                .community(ansiedad).userId("5").role(CommunityMember.MemberRole.MEMBER).build());
+                .community(ansiedad)
+                .userId("5")
+                .username("ramón")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.MEMBER)
+                .build());
 
         // Pedro se une (userId: 4)
         memberRepository.save(CommunityMember.builder()
-                .community(ansiedad).userId("4").role(CommunityMember.MemberRole.MEMBER).build());
+                .community(ansiedad)
+                .userId("4")
+                .username("pedroff")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.MEMBER)
+                .build());
 
         // Publicaciones
         entryRepository.save(CommunityEntry.builder()
@@ -87,10 +102,20 @@ public class DatabaseLoader implements CommandLineRunner {
         log.info("✅ Círculo creado: {}", depresion.getName());
 
         memberRepository.save(CommunityMember.builder()
-                .community(depresion).userId("4").role(CommunityMember.MemberRole.ADMIN).build());
+                .community(depresion)
+                .userId("4")
+                .username("pedroff")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.ADMIN)
+                .build());
 
         memberRepository.save(CommunityMember.builder()
-                .community(depresion).userId("3").role(CommunityMember.MemberRole.MEMBER).build());
+                .community(depresion)
+                .userId("3")
+                .username("laura")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.MEMBER)
+                .build());
 
         entryRepository.save(CommunityEntry.builder()
                 .community(depresion).authorUserId("4").type(CommunityEntry.EntryType.MOTIVATION)
@@ -113,10 +138,20 @@ public class DatabaseLoader implements CommandLineRunner {
         log.info("✅ Círculo creado: {}", mindfulness.getName());
 
         memberRepository.save(CommunityMember.builder()
-                .community(mindfulness).userId("3").role(CommunityMember.MemberRole.ADMIN).build());
+                .community(mindfulness)
+                .userId("3")
+                .username("laura")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.ADMIN)
+                .build());
 
         memberRepository.save(CommunityMember.builder()
-                .community(mindfulness).userId("5").role(CommunityMember.MemberRole.MEMBER).build());
+                .community(mindfulness)
+                .userId("5")
+                .username("ramón")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.MEMBER)
+                .build());
 
         entryRepository.save(CommunityEntry.builder()
                 .community(mindfulness).authorUserId("3").type(CommunityEntry.EntryType.QUESTION)
@@ -139,10 +174,20 @@ public class DatabaseLoader implements CommandLineRunner {
         log.info("✅ Círculo creado: {}", estresLaboral.getName());
 
         memberRepository.save(CommunityMember.builder()
-                .community(estresLaboral).userId("5").role(CommunityMember.MemberRole.ADMIN).build());
+                .community(estresLaboral)
+                .userId("5")
+                .username("ramón")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.ADMIN)
+                .build());
 
         memberRepository.save(CommunityMember.builder()
-                .community(estresLaboral).userId("4").role(CommunityMember.MemberRole.MEMBER).build());
+                .community(estresLaboral)
+                .userId("4")
+                .username("pedroff")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.MEMBER)
+                .build());
 
         entryRepository.save(CommunityEntry.builder()
                 .community(estresLaboral).authorUserId("5").type(CommunityEntry.EntryType.TIP)
@@ -165,7 +210,12 @@ public class DatabaseLoader implements CommandLineRunner {
         log.info("✅ Círculo creado: {}", autoestima.getName());
 
         memberRepository.save(CommunityMember.builder()
-                .community(autoestima).userId("4").role(CommunityMember.MemberRole.ADMIN).build());
+                .community(autoestima)
+                .userId("4")
+                .username("pedroff")
+                .anonymous(false)
+                .role(CommunityMember.MemberRole.ADMIN)
+                .build());
 
         entryRepository.save(CommunityEntry.builder()
                 .community(autoestima).authorUserId("4").type(CommunityEntry.EntryType.ACHIEVEMENT)
@@ -180,4 +230,3 @@ public class DatabaseLoader implements CommandLineRunner {
         log.info("   - 10 publicaciones de ejemplo sobre salud mental");
     }
 }
-

@@ -121,25 +121,27 @@ public class CommunityService {
     }
 
     @Transactional
-    public Community createCommunity(Community community) {
-        log.info("Creating community: {} by user: {}", community.getName(), community.getCreatorUserId());
-        
+    public Community createCommunity(Community community, String creatorUsername) {
+        log.info("Creating community: {} by user: {} ({})",
+                community.getName(), community.getCreatorUserId(), creatorUsername);
+
         // Verificar que no exista una comunidad con el mismo nombre
         if (communityRepository.findByName(community.getName()).isPresent()) {
             throw new IllegalArgumentException("A community with this name already exists");
         }
-        
+
         Community savedCommunity = communityRepository.save(community);
-        
-        // Añadir al creador como miembro con rol ADMIN
+
         CommunityMember creatorMembership = CommunityMember.builder()
                 .community(savedCommunity)
                 .userId(community.getCreatorUserId())
+                .username(creatorUsername)
+                .anonymous(false)    
                 .role(CommunityMember.MemberRole.ADMIN)
                 .build();
-        
+
         memberRepository.save(creatorMembership);
-        
+
         // Recargar la comunidad para obtener los contadores actualizados
         return communityRepository.findById(savedCommunity.getId())
                 .orElse(savedCommunity);

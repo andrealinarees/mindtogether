@@ -28,8 +28,15 @@ public class CommunityMember {
     @JsonIgnore
     private Community community;
 
-    @Column(nullable = false)
+    @Column(name = "user_id", nullable = false)
     private String userId;
+
+    @Column(name = "username", nullable = false)
+    private String username;
+
+    @Column(name = "anonymous", nullable = false)
+    @Builder.Default
+    private boolean anonymous = false;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
@@ -47,6 +54,10 @@ public class CommunityMember {
         if (role == null) {
             role = MemberRole.MEMBER;
         }
+        // si no lo seteas al crear, evita null en BD
+        if (username == null) {
+            username = "unknown";
+        }
     }
 
     public enum MemberRole {
@@ -55,4 +66,3 @@ public class CommunityMember {
         ADMIN        // Puede gestionar la comunidad
     }
 }
-

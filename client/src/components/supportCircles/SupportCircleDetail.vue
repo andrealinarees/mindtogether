@@ -88,7 +88,10 @@
                   <div class="card-body d-flex align-items-center">
                     <i class="bi bi-person-circle fs-2 text-secondary me-3"></i>
                     <div>
-                      <h6 class="mb-1">{{ getAuthorDisplay(member.userId) }}</h6>
+                     <h6 class="mb-1">
+                        {{ member.anonymous ? 'Anónimo 🎭' : (member.username || ('Usuario ' + member.userId)) }}
+                        <span v-if="String(member.userId) === String(currentUserId)">(Tú)</span>
+                      </h6>
                       <span class="badge" :class="getRoleBadgeClass(member.role)">{{ getRoleLabel(member.role) }}</span>
                     </div>
                   </div>
@@ -303,6 +306,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import CommunityRepository from '@/repositories/CommunityRepository'
+import UserRepository from '@/repositories/UserRepository'
 
 const route = useRoute()
 const router = useRouter()
@@ -313,6 +317,9 @@ const currentUserId = ref(localStorage.getItem('userId'))
 const circle = ref(null)
 const members = ref([])
 const entries = ref([])
+
+// cache de usuarios para mostrar nombre/login en lugar de "Usuario X"
+const usersCache = ref({})
 
 const loading = ref(false)
 const loadingMembers = ref(false)
@@ -337,26 +344,38 @@ const isAnonymous = ref(false)
 const newEntry = ref({ type: 'REFLECTION', content: '' })
 const editEntryForm = ref({ id: null, type: 'REFLECTION', content: '' })
 
-const getAnonymousKey = () => `anonymous_circle_${circleId.value}`
-
-const setAnonymousMode = (anonymous) => {
+const setAnonymousMode = async (anonymous) => {
   isAnonymous.value = anonymous
-  localStorage.setItem(getAnonymousKey(), JSON.stringify(anonymous))
   showAnonymousModal.value = false
+  await toggleAnonymous() // guarda en servidor
 }
 
-const toggleAnonymous = () => {
-  localStorage.setItem(getAnonymousKey(), JSON.stringify(isAnonymous.value))
+const toggleAnonymous = async () => {
+  try {
+    await CommunityRepository.updateMyAnonymous(circleId.value, { anonymous: isAnonymous.value })
+    await loadMembers() // refresca estado real desde servidor
+  } catch (err) {
+    console.error('Error updating anonymous:', err)
+    alert('No se pudo actualizar el modo anónimo')
+    // rollback visual si falla
+    isAnonymous.value = !isAnonymous.value
+  }
 }
 
 const getAuthorDisplay = (authorUserId) => {
-  if (authorUserId === currentUserId.value && isAnonymous.value) {
-    return 'Anónimo 🎭'
+  const authorStr = String(authorUserId);
+  const currentStr = String(currentUserId.value);
+  // si yo elegí aparecer anónimo, oculto mi propio nombre
+  if (authorStr === currentStr && isAnonymous.value) {
+    return 'Anónimo 🎭';
   }
-  if (authorUserId !== currentUserId.value) {
-    return 'Anónimo 🎭'
+  // de lo contrario mostramos el nombre almacenado en caché (si tenemos)
+  const user = usersCache.value[authorUserId] || usersCache.value[authorStr];
+  if (user) {
+    return user.name || user.login || `Usuario ${authorUserId}`;
   }
-  return `Usuario ${authorUserId}`
+  // si no lo tenemos, devolvemos el identificador como antes
+  return `Usuario ${authorUserId}`;
 }
 
 const loadCircle = async () => {
@@ -410,10 +429,29 @@ const loadEntries = async () => {
   loadingEntries.value = true
   try {
     entries.value = await CommunityRepository.getEntries(circleId.value)
+
+    // cargar datos de autores de cada entrada (para poder mostrar nombre si no es anónimo)
+    const authorIds = [...new Set(entries.value.map(e => e.authorUserId))]
+    await Promise.all(authorIds.map(id => loadUserInfo(id)))
   } catch (err) {
     console.error('Error loading entries:', err)
   } finally {
     loadingEntries.value = false
+  }
+}
+
+const loadUserInfo = async (userId) => {
+  if (!userId) return
+  const sid = String(userId)
+  if (usersCache.value[userId] || usersCache.value[sid]) {
+    return // ya en caché
+  }
+  try {
+    const user = await UserRepository.findOne(userId)
+    usersCache.value[userId] = user
+    usersCache.value[sid] = user
+  } catch (err) {
+    console.error('Error fetching user info', err)
   }
 }
 

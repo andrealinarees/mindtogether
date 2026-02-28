@@ -100,13 +100,13 @@ public class CommunityResource {
      * POST /api/communities
      */
     @PostMapping
-    public ResponseEntity<Community> createCommunity(@RequestBody Community community, 
-                                                      @RequestHeader("X-User-Id") String userId) {
-        log.info("POST /api/communities - Creating community by user: {}", userId);
+    public ResponseEntity<Community> createCommunity(@RequestBody Community community,
+                                                    @RequestHeader("X-User-Id") String userId,
+                                                    @RequestHeader("X-User") String username) {
         community.setCreatorUserId(userId);
-        
+
         try {
-            Community created = communityService.createCommunity(community);
+            Community created = communityService.createCommunity(community, username); // ✅ aquí
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -166,10 +166,9 @@ public class CommunityResource {
      * GET /api/communities/{id}/members - Ver miembros de la comunidad
      */
     @GetMapping("/{id}/members")
-    public ResponseEntity<List<CommunityMember>> getCommunityMembers(@PathVariable Long id) {
+    public ResponseEntity<List<com.mindtogether.community.dto.CommunityMemberViewDTO>> getCommunityMembers(@PathVariable Long id) {
         log.info("GET /api/communities/{}/members", id);
-        List<CommunityMember> members = memberService.getCommunityMembers(id);
-        return ResponseEntity.ok(members);
+        return ResponseEntity.ok(memberService.getCommunityMembersView(id));
     }
 
     /**
@@ -187,12 +186,15 @@ public class CommunityResource {
      * POST /api/communities/{id}/join
      */
     @PostMapping("/{id}/join")
-    public ResponseEntity<CommunityMember> joinCommunity(@PathVariable Long id, 
-                                                          @RequestHeader("X-User-Id") String userId) {
-        log.info("🤝 POST /api/communities/{}/join - user: {}", id, userId);
+    public ResponseEntity<com.mindtogether.community.dto.CommunityMemberViewDTO> joinCommunity(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestHeader("X-User") String username
+    ) {
+        log.info("🤝 POST /api/communities/{}/join - user: {} ({})", id, userId, username);
 
         try {
-            CommunityMember member = memberService.joinCommunity(id, userId);
+            var member = memberService.joinCommunity(id, userId, username);
             log.info("✅ User {} joined community {} successfully", userId, id);
             return ResponseEntity.status(HttpStatus.CREATED).body(member);
         } catch (IllegalArgumentException e) {
@@ -240,7 +242,23 @@ public class CommunityResource {
         }
     }
 
-    // ==================== ENTRY MANAGEMENT ====================
+    /**
+     * PATCH /api/communities/{id}/members/me/anonymous - Cambiar modo anónimo (persistente)
+     */
+    @PatchMapping("/{id}/members/me/anonymous")
+    public ResponseEntity<Void> updateMyAnonymous(
+            @PathVariable Long id,
+            @RequestHeader("X-User-Id") String userId,
+            @RequestBody UpdateAnonymousRequest req
+    ) {
+        log.info("PATCH /api/communities/{}/members/me/anonymous - user: {}, anonymous: {}", id, userId, req.anonymous());
+        memberService.updateMyAnonymous(id, userId, req.anonymous());
+        return ResponseEntity.noContent().build();
+    }
+
+    public record UpdateAnonymousRequest(boolean anonymous) {}
+
+        // ==================== ENTRY MANAGEMENT ====================
 
     /**
      * HU35 - Ver entradas de comunidad

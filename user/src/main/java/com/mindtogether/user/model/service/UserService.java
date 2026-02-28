@@ -45,7 +45,8 @@ public class UserService {
     return users.filter(user -> user.isActive()).collect(Collectors.toList());
   }
 
-  @PreAuthorize("hasAuthority('ADMIN')")
+  // permit any authenticated user to lookup basic info about another user (needed by frontend)
+  @PreAuthorize("isAuthenticated()")
   public UserWithNotesDTO findOne(Long id) throws NotFoundException {
     User user = userDAO.findById(id);
     if (user == null) {

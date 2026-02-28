@@ -352,6 +352,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import CommunityRepository from '@/repositories/CommunityRepository';
+import UserRepository from '@/repositories/UserRepository';
 import { notify } from '@/common/notifications';
 
 export default {
@@ -366,6 +367,9 @@ export default {
     const community = ref(null);
     const entries = ref([]);
     const currentUserId = ref(localStorage.getItem('userId'));
+
+    // cache para mostrar nombres reales si el usuario no es anónimo
+    const usersCache = ref({});
 
     const showEditEntryModal = ref(false);
     const showDeleteEntryModal = ref(false);
@@ -413,13 +417,23 @@ export default {
     };
 
     const getAuthorDisplay = (authorUserId) => {
+      // convertir a string para comparar
+      const currentUserIdStr = String(currentUserId.value);
+      const authorUserIdStr = String(authorUserId);
+
       // Si el autor es el usuario actual y está en modo anónimo, mostrar "Anónimo"
-      if (authorUserId === currentUserId.value && isAnonymous.value) {
+      if (currentUserIdStr === authorUserIdStr && isAnonymous.value) {
         return 'Anónimo 🎭';
       }
       // Para otros usuarios, siempre mostrar "Anónimo" (proteger privacidad de todos)
-      if (authorUserId !== currentUserId.value) {
+      if (currentUserIdStr !== authorUserIdStr) {
         return 'Anónimo 🎭';
+      }
+      
+      // Si llegamos aquí: es el usuario actual y no está en modo anónimo -> mostrar nombre
+      const user = usersCache.value[authorUserId] || usersCache.value[authorUserIdStr];
+      if (user) {
+        return user.name || user.login || `Usuario ${authorUserId}`;
       }
       return `Usuario ${authorUserId}`;
     };
@@ -455,10 +469,29 @@ export default {
       loadingEntries.value = true;
       try {
         entries.value = await CommunityRepository.getEntries(community.value.id);
+        
+        // cargar info de autores para poder mostrar nombres si no son anónimos
+        const authorIds = [...new Set(entries.value.map(e => e.authorUserId))];
+        await Promise.all(authorIds.map(id => loadUserInfo(id)));
       } catch (err) {
         console.error('Error loading entries:', err);
       } finally {
         loadingEntries.value = false;
+      }
+    };
+
+    const loadUserInfo = async (userId) => {
+      if (!userId) return;
+      const sid = String(userId);
+      if (usersCache.value[userId] || usersCache.value[sid]) {
+        return; // ya en caché
+      }
+      try {
+        const user = await UserRepository.findOne(userId);
+        usersCache.value[userId] = user;
+        usersCache.value[sid] = user;
+      } catch (err) {
+        console.error('Error fetching user info:', err);
       }
     };
 

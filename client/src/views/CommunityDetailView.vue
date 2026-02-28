@@ -613,19 +613,12 @@ export default {
     };
 
     const getAuthorDisplay = (authorUserId) => {
-      // Convertir ambos a string para comparación
-      const currentUserIdStr = String(currentUserId.value);
-      const authorUserIdStr = String(authorUserId);
-      
-      if (authorUserIdStr === currentUserIdStr && isAnonymous.value) {
+      const authorStr = String(authorUserId);
+      const currentStr = String(currentUserId.value);
+      if (authorStr === currentStr && isAnonymous.value) {
         return 'Anónimo 🎭';
       }
-      if (authorUserIdStr !== currentUserIdStr) {
-        return 'Anónimo 🎭';
-      }
-      // Si no es anónimo, mostrar el nombre real del usuario
-      // Buscar en caché usando ambos formatos (string y number)
-      const user = usersCache.value[authorUserId] || usersCache.value[authorUserIdStr];
+      const user = usersCache.value[authorUserId] || usersCache.value[authorStr];
       if (user) {
         console.log(`📝 Displaying user ${authorUserId}:`, user.name || user.login);
         return user.name || user.login || `Usuario ${authorUserId}`;
@@ -852,14 +845,24 @@ export default {
     };
 
     const getMemberDisplay = (member) => {
-      const userId = String(member.userId);
-      const user = usersCache.value[userId] || usersCache.value[member.userId];
+      // convertir a string para comparar
+      const currentUserIdStr = String(currentUserId.value)
+      const memberUserIdStr = String(member.userId)
+
+      // si el usuario es anónimo en la comunidad, mostrar anónimo para otros
+      if (memberUserIdStr !== currentUserIdStr && isAnonymous.value) {
+        return 'Anónimo 🎭'
+      }
+
+      // buscar nombre en caché primero
+      const userId = member.userId
+      const user = usersCache.value[userId] || usersCache.value[memberUserIdStr]
       
       if (user) {
-        return user.name || user.login || `Usuario ${userId}`;
+        return user.name || user.login || `Usuario ${userId}`
       }
       
-      return `Usuario ${userId}`;
+      return `Usuario ${userId}`
     };
 
     const getRoleLabel = (role) => {

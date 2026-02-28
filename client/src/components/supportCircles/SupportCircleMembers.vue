@@ -28,9 +28,11 @@
             <div>
               <h5 class="mb-1">
                 <template v-if="member.userId === currentUserId">
-                  {{ isAnonymous ? 'Anónimo 🎭 (Tú)' : 'Usuario ' + member.userId + ' (Tú)' }}
+                  {{ isAnonymous ? 'Anónimo 🎭 (Tú)' : getUserDisplay(member.userId) + ' (Tú)' }}
                 </template>
-                <template v-else>Anónimo 🎭</template>
+                <template v-else>
+                  {{ isAnonymous ? 'Anónimo 🎭' : getUserDisplay(member.userId) }}
+                </template>
               </h5>
               <span class="badge" :class="getRoleBadgeClass(member.role)">
                 {{ getRoleLabel(member.role) }}
@@ -56,6 +58,7 @@
 import { ref, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import CommunityRepository from '@/repositories/CommunityRepository'
+import UserRepository from '@/repositories/UserRepository'
 
 const route = useRoute()
 const members = ref([])
@@ -64,27 +67,47 @@ const error = ref('')
 const currentUserId = ref(localStorage.getItem('userId'))
 const isAnonymous = ref(false)
 
+const usersCache = ref({})
+
 const loadMembers = async () => {
-  loading.value = true
-  error.value = ''
+  loadingMembers.value = true
   try {
-    members.value = await CommunityRepository.getMembers(route.params.id)
-    // Cargar preferencia de anonimato
-    const savedPref = localStorage.getItem(`anonymous_circle_${route.params.id}`)
-    if (savedPref !== null) {
-      isAnonymous.value = JSON.parse(savedPref)
+    members.value = await CommunityRepository.getMembers(circleId.value)
+
+    // mi estado anónimo viene del servidor
+    const me = members.value.find(m => String(m.userId) === String(currentUserId.value))
+    if (me) {
+      isAnonymous.value = !!me.anonymous
     }
   } catch (err) {
     console.error('Error loading members:', err)
-    error.value = 'Error al cargar los miembros'
   } finally {
-    loading.value = false
+    loadingMembers.value = false
   }
 }
 
 const getRoleBadgeClass = (role) => {
   const classes = { ADMIN: 'bg-danger', MODERATOR: 'bg-warning text-dark', MEMBER: 'bg-primary' }
   return classes[role] || 'bg-secondary'
+}
+
+const getUserDisplay = (userId) => {
+  const uid = String(userId)
+  const user = usersCache.value[userId] || usersCache.value[uid]
+  return user ? (user.name || user.login || `Usuario ${userId}`) : `Usuario ${userId}`
+}
+
+const loadUserInfo = async (userId) => {
+  if (!userId) return
+  const sid = String(userId)
+  if (usersCache.value[userId] || usersCache.value[sid]) return
+  try {
+    const user = await UserRepository.findOne(userId)
+    usersCache.value[userId] = user
+    usersCache.value[sid] = user
+  } catch (err) {
+    console.error('Error fetching user info', err)
+  }
 }
 
 const getRoleLabel = (role) => {
