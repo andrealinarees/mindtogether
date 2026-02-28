@@ -293,10 +293,20 @@ public class CommunityResource {
     @PostMapping("/{id}/entries")
     public ResponseEntity<CommunityEntry> createEntry(@PathVariable Long id,
                                                        @RequestBody CommunityEntry entry,
-                                                       @RequestHeader("X-User-Id") String userId) {
-        log.info("POST /api/communities/{}/entries - user: {}, type: {}", id, userId, entry.getType());
+                                                       @RequestHeader("X-User-Id") String userId,
+                                                       @RequestHeader(value = "X-User-Name", required = false) String userName) {
+        log.info("POST /api/communities/{}/entries - user: {} ({}), type: {}, anonymous: {}", 
+                 id, userId, userName, entry.getType(), entry.getIsAnonymous());
         
         try {
+            // Si no se envía isAnonymous, por defecto es false
+            if (entry.getIsAnonymous() == null) {
+                entry.setIsAnonymous(false);
+            }
+            
+            // Guardar el nombre del usuario (se usará solo si no es anónimo)
+            entry.setAuthorUserName(userName != null ? userName : "Usuario " + userId);
+            
             CommunityEntry created = entryService.createEntry(id, entry, userId);
             return ResponseEntity.status(HttpStatus.CREATED).body(created);
         } catch (IllegalArgumentException e) {

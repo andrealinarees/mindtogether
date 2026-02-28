@@ -1,6 +1,7 @@
 import axios from "axios";
 import { BACKEND_URL } from "../constants.js";
 import auth from "./auth.js";
+import { getStore } from "./store.js";
 
 const HTTP = axios.create({
   baseURL: BACKEND_URL
@@ -42,6 +43,18 @@ const onRequest = (config) => {
   } else {
     console.warn('⚠️ No hay userId en localStorage');
   }
+
+  // Agregar X-User desde el store de Vue (más confiable que localStorage)
+  const store = getStore();
+  const userName = store.state.user.name || store.state.user.login || null;
+  if (userName) {
+    config.headers['X-User'] = userName;
+  }
+  
+  console.log('📤 HTTP Request:', config.method?.toUpperCase(), config.url, {
+    userId: config.headers['X-User-Id'],
+    userName: config.headers['X-User']
+  })
 
   return config;
 };

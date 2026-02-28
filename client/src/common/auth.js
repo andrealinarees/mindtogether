@@ -23,6 +23,7 @@ async function login(credentials) {
 function logout() {
   _removeToken();
   localStorage.removeItem("userId");
+  localStorage.removeItem("userName");
   getStore().state.user.login = "";
   getStore().state.user.name = "";
   getStore().state.user.authority = "";
@@ -59,9 +60,12 @@ async function _authenticate() {
   store.state.user.authority = response.authority;
   store.state.user.logged = true;
 
-  // Guardar el userId en localStorage para los microservicios
+  // Guardar el userId y userName en localStorage para los microservicios
   if (response.id) {
     localStorage.setItem("userId", response.id.toString());
+  }
+  if (response.name || response.login) {
+    localStorage.setItem("userName", response.name || response.login);
   }
 
   return store.state.user;

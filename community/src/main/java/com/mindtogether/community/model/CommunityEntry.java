@@ -29,6 +29,12 @@ public class CommunityEntry {
     @Column(nullable = false)
     private String authorUserId;
 
+    @Column(length = 200)
+    private String authorUserName;
+
+    @Column(nullable = false)
+    private Boolean isAnonymous = false;
+
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private EntryType type;

@@ -77,17 +77,17 @@ public class DatabaseLoader implements CommandLineRunner {
 
         // Publicaciones
         entryRepository.save(CommunityEntry.builder()
-                .community(ansiedad).authorUserId("3").type(CommunityEntry.EntryType.MOTIVATION)
+                .community(ansiedad).authorUserId("3").authorUserName("Laura").isAnonymous(false).type(CommunityEntry.EntryType.MOTIVATION)
                 .content("¡Bienvenidos al círculo! 💙 Recuerden que sentir ansiedad no nos define. Estamos aquí para apoyarnos. Compartan lo que les funciona para calmarse cuando sienten que la ansiedad aparece.")
                 .createdAt(LocalDateTime.now().minusDays(5)).build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(ansiedad).authorUserId("5").type(CommunityEntry.EntryType.TIP)
+                .community(ansiedad).authorUserId("5").authorUserName("Ramón").isAnonymous(false).type(CommunityEntry.EntryType.TIP)
                 .content("A mí me funciona mucho la técnica 5-4-3-2-1: nombrar 5 cosas que veo, 4 que toco, 3 que escucho, 2 que huelo y 1 que saboreo. Me ayuda a volver al presente cuando la ansiedad me invade.")
                 .createdAt(LocalDateTime.now().minusDays(4)).build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(ansiedad).authorUserId("4").type(CommunityEntry.EntryType.REFLECTION)
+                .community(ansiedad).authorUserId("4").authorUserName("Pedro").isAnonymous(false).type(CommunityEntry.EntryType.REFLECTION)
                 .content("Hoy tuve un episodio de ansiedad en el trabajo pero logré controlarlo con respiración diafragmática. Hace un mes no hubiera podido. Pequeños avances 💪")
                 .createdAt(LocalDateTime.now().minusDays(3)).build());
 
@@ -118,12 +118,12 @@ public class DatabaseLoader implements CommandLineRunner {
                 .build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(depresion).authorUserId("4").type(CommunityEntry.EntryType.MOTIVATION)
+                .community(depresion).authorUserId("4").authorUserName("Pedro").isAnonymous(false).type(CommunityEntry.EntryType.MOTIVATION)
                 .content("Hoy logré levantarme temprano, ducharme y desayunar bien. Parece poco, pero para mí es un gran paso. No subestimen los pequeños logros. 🌅")
                 .createdAt(LocalDateTime.now().minusDays(3)).build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(depresion).authorUserId("3").type(CommunityEntry.EntryType.TIP)
+                .community(depresion).authorUserId("3").authorUserName("Laura").isAnonymous(false).type(CommunityEntry.EntryType.TIP)
                 .content("Mi terapeuta me recomendó escribir cada noche 3 cosas buenas que pasaron en el día, por pequeñas que sean. Al principio costaba, pero ahora me ayuda a ver que no todo es gris.")
                 .createdAt(LocalDateTime.now().minusDays(2)).build());
 
@@ -154,12 +154,12 @@ public class DatabaseLoader implements CommandLineRunner {
                 .build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(mindfulness).authorUserId("3").type(CommunityEntry.EntryType.QUESTION)
+                .community(mindfulness).authorUserId("3").authorUserName("Laura").isAnonymous(false).type(CommunityEntry.EntryType.QUESTION)
                 .content("¡Bienvenidos! 🧘 ¿Cuánto tiempo dedican a meditar cada día? Yo estoy intentando hacer 10 minutos cada mañana y noto una gran diferencia en mi nivel de estrés.")
                 .createdAt(LocalDateTime.now().minusDays(2)).build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(mindfulness).authorUserId("5").type(CommunityEntry.EntryType.TIP)
+                .community(mindfulness).authorUserId("5").authorUserName("Ramón").isAnonymous(false).type(CommunityEntry.EntryType.TIP)
                 .content("Para los que están empezando: prueben la meditación de escaneo corporal antes de dormir. Se trata de recorrer mentalmente cada parte del cuerpo relajándola. Duermo mucho mejor desde que lo hago. 🌙")
                 .createdAt(LocalDateTime.now().minusDays(1)).build());
 
@@ -190,12 +190,12 @@ public class DatabaseLoader implements CommandLineRunner {
                 .build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(estresLaboral).authorUserId("5").type(CommunityEntry.EntryType.TIP)
+                .community(estresLaboral).authorUserId("5").authorUserName("Ramón").isAnonymous(false).type(CommunityEntry.EntryType.TIP)
                 .content("Algo que me ayudó mucho: establecer una hora fija para dejar de mirar el correo del trabajo. Desde que puse ese límite a las 19h, mis noches son mucho más tranquilas. ⏰")
                 .createdAt(LocalDateTime.now().minusDays(1)).build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(estresLaboral).authorUserId("4").type(CommunityEntry.EntryType.PROPOSAL)
+                .community(estresLaboral).authorUserId("4").authorUserName("Pedro").isAnonymous(false).type(CommunityEntry.EntryType.PROPOSAL)
                 .content("¿Qué les parece si compartimos cada viernes un 'logro de la semana'? Puede ser algo tan simple como haber dicho que no a una reunión innecesaria o haberse tomado un descanso.")
                 .createdAt(LocalDateTime.now().minusHours(12)).build());
 
@@ -218,7 +218,7 @@ public class DatabaseLoader implements CommandLineRunner {
                 .build());
 
         entryRepository.save(CommunityEntry.builder()
-                .community(autoestima).authorUserId("4").type(CommunityEntry.EntryType.ACHIEVEMENT)
+                .community(autoestima).authorUserId("4").authorUserName("Pedro").isAnonymous(false).type(CommunityEntry.EntryType.ACHIEVEMENT)
                 .content("🏆 Hoy me miré al espejo y me dije algo bonito en vez de criticarme. Parece tonto pero es un gran cambio para mí. La autocompasión es un músculo que se entrena.")
                 .createdAt(LocalDateTime.now().minusHours(6)).build());
 

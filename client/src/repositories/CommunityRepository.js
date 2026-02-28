@@ -53,6 +53,11 @@ export default {
     return (await HTTP.get(`${resource}/${id}/members`)).data;
   },
 
+  // Actualizar mi estado de anonimato en una comunidad
+  async updateMyAnonymous(id, data) {
+    return (await HTTP.patch(`${resource}/${id}/members/me/anonymous`, data)).data;
+  },
+
   // Obtener número de miembros
   async getMemberCount(id) {
     return (await HTTP.get(`${resource}/${id}/members/count`)).data;
