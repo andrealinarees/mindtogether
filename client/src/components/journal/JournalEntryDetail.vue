@@ -73,6 +73,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRouter, useRoute } from 'vue-router'
 import JournalRepository from '@/repositories/JournalRepository'
+import { notify, confirm } from '@/common/notifications'
 
 export default {
   name: 'JournalEntryDetail',
@@ -104,8 +105,9 @@ export default {
       }
     }
 
-    const confirmDelete = () => {
-      if (confirm(`¿Eliminar esta entrada del diario?\n\nEsta acción no se puede deshacer.`)) {
+    const confirmDelete = async () => {
+      const confirmed = await confirm('¿Eliminar esta entrada del diario?\n\nEsta acción no se puede deshacer.', { danger: true })
+      if (confirmed) {
         deleteEntry()
       }
     }
@@ -114,10 +116,11 @@ export default {
       deleting.value = true
       try {
         await JournalRepository.delete(entry.value.id)
+        notify.success('Entrada eliminada correctamente')
         router.push('/journal')
       } catch (error) {
         console.error('Error:', error)
-        alert('Error al eliminar la entrada')
+        notify.error('Error al eliminar la entrada')
       } finally {
         deleting.value = false
       }

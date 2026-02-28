@@ -157,6 +157,7 @@ import { ref, computed, onMounted, onActivated } from 'vue'
 import { useRouter } from 'vue-router'
 import GoalRepository from '@/repositories/GoalRepository'
 import GoalCard from './GoalCard.vue'
+import { notify, confirm } from '@/common/notifications'
 
 export default {
   name: 'GoalList',
@@ -227,28 +228,30 @@ export default {
     }
 
     const completeGoal = async (id) => {
-      if (!confirm('¿Estás seguro de que quieres marcar esta meta como completada?')) {
-        return
-      }
+      const confirmed = await confirm('¿Estás seguro de que quieres marcar esta meta como completada?')
+      if (!confirmed) return
+      
       try {
         await GoalRepository.complete(id)
+        notify.success('Meta completada exitosamente')
         await loadGoals()
       } catch (error) {
         console.error('Error completing goal:', error)
-        alert('Error al marcar la meta como completada')
+        notify.error('Error al marcar la meta como completada')
       }
     }
 
     const deleteGoal = async (id) => {
-      if (!confirm('¿Estás seguro de que quieres eliminar esta meta?\n\nEsta acción no se puede deshacer.')) {
-        return
-      }
+      const confirmed = await confirm('¿Estás seguro de que quieres eliminar esta meta?\n\nEsta acción no se puede deshacer.', { danger: true })
+      if (!confirmed) return
+      
       try {
         await GoalRepository.delete(id)
+        notify.success('Meta eliminada correctamente')
         await loadGoals()
       } catch (error) {
         console.error('Error deleting goal:', error)
-        alert('Error al eliminar la meta')
+        notify.error('Error al eliminar la meta')
       }
     }
 

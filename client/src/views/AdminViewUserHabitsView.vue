@@ -105,6 +105,7 @@
 import { ref, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import HTTP from '@/common/http';
+import { notify } from '@/common/notifications';
 
 export default {
   name: 'AdminViewUserHabitsView',
@@ -127,7 +128,7 @@ export default {
         console.log('✅ Hábitos cargados:', habits.value.length);
       } catch (error) {
         console.error('Error loading habits:', error);
-        alert('Error al cargar los hábitos del usuario.');
+        notify.error('Error al cargar los hábitos del usuario.');
       } finally {
         loading.value = false;
       }

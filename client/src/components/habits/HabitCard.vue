@@ -113,6 +113,7 @@ import { ref, computed } from 'vue'
 import { useRouter } from 'vue-router'
 import HTTP from '@/common/http.js'
 import GoalRepository from '@/repositories/GoalRepository'
+import { notify, confirm } from '@/common/notifications'
 
 export default {
   name: 'HabitCard',
@@ -153,10 +154,10 @@ export default {
 
         // Mostrar feedback visual
         const action = props.habit.completedToday ? 'completado' : 'desmarcado como completado'
-        console.log(`Hábito ${action} exitosamente`)
+        notify.success(`Hábito ${action} exitosamente`)
       } catch (error) {
         console.error('Error al alternar completación:', error)
-        alert('Error al actualizar el hábito: ' + (error.response?.data?.message || error.message))
+        notify.error('Error al actualizar el hábito: ' + (error.response?.data?.message || error.message))
       } finally {
         togglingCompletion.value = false
       }
@@ -174,8 +175,9 @@ export default {
       router.push('/categories')
     }
 
-    const confirmDelete = () => {
-      if (confirm(`¿Estás seguro de que quieres eliminar el hábito "${props.habit.name}"?\n\nEsta acción no se puede deshacer.`)) {
+    const confirmDelete = async () => {
+      const confirmed = await confirm(`¿Estás seguro de que quieres eliminar el hábito "${props.habit.name}"?\n\nEsta acción no se puede deshacer.`, { danger: true })
+      if (confirmed) {
         deleteHabit()
       }
     }
@@ -195,10 +197,11 @@ export default {
 
         // Ahora eliminar el hábito
         await HTTP.delete(`/habits/${props.habit.id}`)
+        notify.success('Hábito eliminado correctamente')
         emit('deleted')
       } catch (error) {
         console.error('Error eliminando hábito:', error)
-        alert('Error al eliminar el hábito: ' + (error.response?.data?.message || error.message))
+        notify.error('Error al eliminar el hábito: ' + (error.response?.data?.message || error.message))
       } finally {
         deleting.value = false
       }

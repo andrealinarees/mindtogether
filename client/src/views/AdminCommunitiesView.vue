@@ -328,6 +328,7 @@
 <script>
 import { ref, computed, onMounted } from 'vue';
 import CommunityRepository from '@/repositories/CommunityRepository';
+import { notify } from '@/common/notifications';
 
 export default {
   name: 'AdminCommunitiesView',
@@ -447,10 +448,10 @@ export default {
         await CommunityRepository.delete(communityToDelete.value.id);
         closeDeleteModal();
         await loadCommunities();
-        console.log('✅ Comunidad eliminada');
+        notify.success('Comunidad eliminada correctamente');
       } catch (err) {
         console.error('Error deleting community:', err);
-        alert('Error al eliminar la comunidad');
+        notify.error('Error al eliminar la comunidad');
       } finally {
         deleting.value = false;
       }

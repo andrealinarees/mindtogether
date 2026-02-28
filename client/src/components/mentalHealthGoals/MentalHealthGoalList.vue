@@ -151,6 +151,7 @@
 <script setup>
 import { ref, computed, onMounted, watch } from 'vue'
 import MentalHealthGoalRepository from '@/repositories/MentalHealthGoalRepository'
+import { notify, confirm } from '@/common/notifications'
 
 const goals = ref([])
 const stats = ref(null)
@@ -227,13 +228,16 @@ async function loadGoals() {
 }
 
 async function deleteGoal(goal) {
-  if (!confirm(`¿Eliminar la meta "${goal.name}"?`)) return
+  const confirmed = await confirm(`¿Eliminar la meta "${goal.name}"?`, { danger: true })
+  if (!confirmed) return
+  
   try {
     await MentalHealthGoalRepository.delete(goal.id)
     goals.value = goals.value.filter(g => g.id !== goal.id)
+    notify.success('Meta eliminada correctamente')
   } catch (err) {
     console.error('Error deleting goal:', err)
-    alert('Error al eliminar la meta')
+    notify.error('Error al eliminar la meta')
   }
 }
 
@@ -248,10 +252,11 @@ async function quickIncrement(goal) {
     }
     // Refresh stats
     stats.value = await MentalHealthGoalRepository.getStatistics()
+    notify.success('Progreso registrado exitosamente')
   } catch (err) {
     console.error('Error incrementing progress:', err)
     goal._incrementing = false
-    alert('Error al registrar progreso')
+    notify.error('Error al registrar progreso')
   }
 }
 

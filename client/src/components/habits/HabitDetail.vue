@@ -353,6 +353,7 @@ import HabitRepository from '@/repositories/HabitRepository.js'
 import GoalRepository from '@/repositories/GoalRepository'
 import AccountRepository from '@/repositories/AccountRepository.js'
 import { getCityCoordinates } from '@/common/cities.js'
+import { notify, confirm } from '@/common/notifications'
 
 export default {
   name: 'HabitDetail',
@@ -479,17 +480,18 @@ export default {
         }
 
         cancelEdit()
-        console.log('Comentario actualizado:', updated)
+        notify.success('Comentario actualizado correctamente')
       } catch (error) {
         console.error('Error actualizando comentario:', error)
-        alert('Error al actualizar el comentario. Por favor, intenta de nuevo.')
+        notify.error('Error al actualizar el comentario. Por favor, intenta de nuevo.')
       } finally {
         updatingComment.value = false
       }
     }
 
-    const confirmDeleteComment = (commentId) => {
-      if (confirm('¿Estás seguro de que quieres eliminar este comentario?\n\nEsta acción no se puede deshacer.')) {
+    const confirmDeleteComment = async (commentId) => {
+      const confirmed = await confirm('¿Estás seguro de que quieres eliminar este comentario?\n\nEsta acción no se puede deshacer.', { danger: true })
+      if (confirmed) {
         deleteComment(commentId)
       }
     }
@@ -501,10 +503,10 @@ export default {
         // Eliminar de la lista local
         comments.value = comments.value.filter(c => c.id !== commentId)
 
-        console.log('Comentario eliminado')
+        notify.success('Comentario eliminado correctamente')
       } catch (error) {
         console.error('Error eliminando comentario:', error)
-        alert('Error al eliminar el comentario. Por favor, intenta de nuevo.')
+        notify.error('Error al eliminar el comentario. Por favor, intenta de nuevo.')
       }
     }
 

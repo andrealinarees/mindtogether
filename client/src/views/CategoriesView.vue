@@ -129,6 +129,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import HTTP from '@/common/http.js'
+import { notify } from '@/common/notifications'
 
 export default {
   name: 'CategoriesView',
@@ -145,7 +146,7 @@ export default {
         console.log('Categories loaded:', categories.value)
       } catch (error) {
         console.error('Error loading categories:', error)
-        alert('Error al cargar las categorías. Por favor, intenta de nuevo.')
+        notify.error('Error al cargar las categorías. Por favor, intenta de nuevo.')
       } finally {
         loading.value = false
       }

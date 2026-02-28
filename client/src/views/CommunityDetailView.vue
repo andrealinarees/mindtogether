@@ -533,6 +533,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter, useRoute } from 'vue-router';
 import CommunityRepository from '@/repositories/CommunityRepository';
+import { notify } from '@/common/notifications';
 
 export default {
   name: 'CommunityDetailView',
@@ -679,7 +680,7 @@ export default {
         console.log('✅ Te has unido a la comunidad exitosamente');
       } catch (err) {
         console.error('Error joining community:', err);
-        alert('Error al unirse a la comunidad. Por favor, inténtalo de nuevo.');
+        notify.error('Error al unirse a la comunidad. Por favor, inténtalo de nuevo.');
       }
     };
 
@@ -736,7 +737,7 @@ export default {
         router.push('/community');
       } catch (err) {
         console.error('Error deleting community:', err);
-        alert('Error al eliminar la comunidad. Por favor, inténtalo de nuevo.');
+        notify.error('Error al eliminar la comunidad. Por favor, inténtalo de nuevo.');
       } finally {
         deleting.value = false;
         closeDeleteModal();
@@ -761,9 +762,9 @@ export default {
       } catch (err) {
         console.error('Error leaving community:', err);
         if (err.response && err.response.status === 403) {
-          alert('No puedes salir de esta comunidad. El creador no puede abandonar su propia comunidad.');
+          notify.error('No puedes salir de esta comunidad. El creador no puede abandonar su propia comunidad.');
         } else {
-          alert('Error al salir de la comunidad. Por favor, inténtalo de nuevo.');
+          notify.error('Error al salir de la comunidad. Por favor, inténtalo de nuevo.');
         }
       } finally {
         leaving.value = false;
@@ -922,7 +923,7 @@ export default {
         console.log('✅ Publicación eliminada exitosamente');
       } catch (err) {
         console.error('Error deleting entry:', err);
-        alert('Error al eliminar la publicación. Por favor, inténtalo de nuevo.');
+        notify.error('Error al eliminar la publicación. Por favor, inténtalo de nuevo.');
       } finally {
         deletingEntry.value = false;
       }

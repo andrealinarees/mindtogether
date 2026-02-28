@@ -230,6 +230,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import HTTP from '@/common/http';
+import { notify } from '@/common/notifications';
 
 export default {
   name: 'AdminUsersView',
@@ -278,7 +279,7 @@ export default {
         console.log('✅ Usuarios cargados:', users.value.length);
       } catch (error) {
         console.error('Error loading users:', error);
-        alert('Error al cargar los usuarios. Por favor, intenta de nuevo.');
+        notify.error('Error al cargar los usuarios. Por favor, intenta de nuevo.');
       } finally {
         loading.value = false;
       }
@@ -288,10 +289,10 @@ export default {
       try {
         await HTTP.put(`/users/${user.id}/active`);
         user.active = true;
-        console.log('✅ Usuario activado:', user.name);
+        notify.success(`Usuario ${user.name} activado correctamente`);
       } catch (error) {
         console.error('Error activating user:', error);
-        alert('Error al activar el usuario. Por favor, intenta de nuevo.');
+        notify.error('Error al activar el usuario. Por favor, intenta de nuevo.');
       }
     };
 
@@ -299,10 +300,10 @@ export default {
       try {
         await HTTP.delete(`/users/${user.id}/active`);
         user.active = false;
-        console.log('✅ Usuario desactivado:', user.name);
+        notify.success(`Usuario ${user.name} desactivado correctamente`);
       } catch (error) {
         console.error('Error deactivating user:', error);
-        alert('Error al desactivar el usuario. Por favor, intenta de nuevo.');
+        notify.error('Error al desactivar el usuario. Por favor, intenta de nuevo.');
       }
     };
 
@@ -323,11 +324,11 @@ export default {
       try {
         await HTTP.delete(`/users/${userToDelete.value.id}`);
         users.value = users.value.filter(u => u.id !== userToDelete.value.id);
-        console.log('✅ Usuario eliminado:', userToDelete.value.name);
+        notify.success(`Usuario ${userToDelete.value.name} eliminado correctamente`);
         closeDeleteModal();
       } catch (error) {
         console.error('Error deleting user:', error);
-        alert('Error al eliminar el usuario. Por favor, intenta de nuevo.');
+        notify.error('Error al eliminar el usuario. Por favor, intenta de nuevo.');
       } finally {
         deleting.value = false;
       }

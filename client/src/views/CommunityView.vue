@@ -380,6 +380,7 @@
 import { ref, computed, onMounted } from 'vue';
 import { useRouter } from 'vue-router';
 import CommunityRepository from '@/repositories/CommunityRepository';
+import { notify } from '@/common/notifications';
 
 export default {
   name: 'CommunityView',
@@ -559,9 +560,9 @@ export default {
       } catch (err) {
         console.error('Error joining community:', err);
         if (err.response && err.response.status === 409) {
-          alert('Ya eres miembro de esta comunidad');
+          notify.warning('Ya eres miembro de esta comunidad');
         } else {
-          alert('Error al unirse a la comunidad. Por favor, inténtalo de nuevo.');
+          notify.error('Error al unirse a la comunidad. Por favor, inténtalo de nuevo.');
         }
       }
     };
@@ -693,9 +694,9 @@ export default {
       } catch (err) {
         console.error('Error deleting community:', err);
         if (err.response && err.response.status === 403) {
-          alert('Solo el creador puede eliminar esta comunidad');
+          notify.error('Solo el creador puede eliminar esta comunidad');
         } else {
-          alert('Error al eliminar la comunidad. Por favor, inténtalo de nuevo.');
+          notify.error('Error al eliminar la comunidad. Por favor, inténtalo de nuevo.');
         }
       } finally {
         deleting.value = false;
@@ -748,9 +749,9 @@ export default {
       } catch (err) {
         console.error('Error leaving community:', err);
         if (err.response && err.response.status === 403) {
-          alert('No puedes salir de esta comunidad. El creador no puede abandonar su propia comunidad.');
+          notify.error('No puedes salir de esta comunidad. El creador no puede abandonar su propia comunidad.');
         } else {
-          alert('Error al salir de la comunidad. Por favor, inténtalo de nuevo.');
+          notify.error('Error al salir de la comunidad. Por favor, inténtalo de nuevo.');
         }
       } finally {
         leaving.value = false;
