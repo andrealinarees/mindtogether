@@ -1,17 +1,25 @@
 /**
  * JournalRepository - Almacenamiento local de entradas del diario emocional.
  * Usa localStorage ya que no hay microservicio de journal.
+ * Las entradas se guardan por usuario usando su login como clave.
  */
+import { getStore } from '@/common/store'
 
-const STORAGE_KEY = 'mindtogether_journal_entries'
+const STORAGE_PREFIX = 'mindtogether_journal_'
+
+const getStorageKey = () => {
+  const store = getStore()
+  const login = store.state.user.login || 'anonymous'
+  return `${STORAGE_PREFIX}${login}`
+}
 
 const getEntries = () => {
-  const data = localStorage.getItem(STORAGE_KEY)
+  const data = localStorage.getItem(getStorageKey())
   return data ? JSON.parse(data) : []
 }
 
 const saveEntries = (entries) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(entries))
+  localStorage.setItem(getStorageKey(), JSON.stringify(entries))
 }
 
 export default {

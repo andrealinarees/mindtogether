@@ -108,11 +108,84 @@
   </nav>
   <router-view />
   <ToastNotification />
+
+  <!-- Panel lateral del Chatbot -->
+  <div
+    v-if="store.state.user.logged && store.state.user.authority !== 'ADMIN'"
+    class="chatbot-panel"
+    :class="{ 'chatbot-panel-open': chatOpen }"
+  >
+    <!-- Cabecera -->
+    <div class="chatbot-header">
+      <div class="d-flex align-items-center gap-2">
+        <i class="bi bi-robot"></i>
+        <strong>Asistente IA</strong>
+      </div>
+      <button class="btn btn-sm btn-outline-light border-0" @click="chatOpen = false">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Mensajes -->
+    <div class="chatbot-messages" ref="chatMessages">
+      <div
+        v-for="(msg, i) in chatMessages"
+        :key="i"
+        class="chatbot-msg"
+        :class="msg.role === 'user' ? 'chatbot-msg-user' : 'chatbot-msg-bot'"
+      >
+        <small v-if="msg.role === 'assistant'" class="text-muted d-block mb-1">
+          <i class="bi bi-robot me-1"></i>Asistente
+          <span v-if="msg.isCrisis" class="badge bg-danger ms-1">⚠️ Apoyo</span>
+        </small>
+        <div
+          class="chatbot-bubble"
+          :class="[
+            msg.role === 'user' ? 'bg-primary text-white' : 'bg-light',
+            msg.isCrisis ? 'chatbot-crisis' : ''
+          ]"
+          style="white-space: pre-line;"
+        >{{ msg.content }}</div>
+      </div>
+      <div v-if="chatLoading" class="chatbot-msg chatbot-msg-bot">
+        <div class="chatbot-bubble bg-light">
+          <span class="chatbot-typing"><span>.</span><span>.</span><span>.</span></span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div class="chatbot-input">
+      <input
+        type="text"
+        class="form-control form-control-sm"
+        v-model="chatInput"
+        placeholder="Escribe un mensaje..."
+        @keyup.enter="sendChatMessage"
+        :disabled="chatLoading"
+      />
+      <button class="btn btn-primary btn-sm" @click="sendChatMessage" :disabled="!chatInput.trim() || chatLoading">
+        <i class="bi bi-send-fill"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- Botón flotante del Chatbot -->
+  <button
+    v-if="store.state.user.logged && store.state.user.authority !== 'ADMIN'"
+    class="chatbot-fab"
+    :class="{ 'chatbot-fab-active': chatOpen }"
+    title="Hablar con el asistente IA"
+    @click="chatOpen = !chatOpen"
+  >
+    <i :class="chatOpen ? 'bi bi-x-lg' : 'bi bi-chat-dots-fill'"></i>
+  </button>
 </template>
 
 <script>
 import { getStore } from "./common/store";
 import auth from "./common/auth";
+import chatbot from "./common/chatbot";
 import ToastNotification from "./components/ToastNotification.vue";
 
 export default {
@@ -121,16 +194,80 @@ export default {
   },
   data() {
     return {
-      store: getStore()
+      store: getStore(),
+      chatOpen: false,
+      chatInput: '',
+      chatLoading: false,
+      chatMessages: []
     };
+  },
+  computed: {
+    currentUserLogin() {
+      return this.store.state.user.login;
+    }
+  },
+  created() {
+    this.chatMessages = chatbot.loadConversation(this.currentUserLogin);
   },
   methods: {
     desautenticarme() {
+      this.saveChatMessages();
+      this.chatMessages = [];
+      this.chatOpen = false;
+      this.chatInput = '';
       auth.logout();
       this.$router.push("/");
+    },
+    async sendChatMessage() {
+      const text = this.chatInput.trim();
+      if (!text) return;
+
+      this.chatMessages.push({ role: 'user', content: text, isCrisis: false });
+      this.chatInput = '';
+      this.chatLoading = true;
+      this.saveChatMessages();
+      this.$nextTick(() => this.scrollChat());
+
+      try {
+        const history = this.chatMessages.filter(m => m.role !== 'system');
+        const result = await chatbot.sendMessage(history, text);
+
+        this.chatMessages.push({
+          role: 'assistant',
+          content: result.content,
+          isCrisis: result.isCrisis
+        });
+      } catch (error) {
+        this.chatMessages.push({
+          role: 'assistant',
+          content: 'No se pudo conectar con el asistente. Asegúrate de que Ollama esté ejecutándose (ollama serve).\n\nSi necesitas ayuda urgente:\n📞 Teléfono de la Esperanza: 717 003 717\n📞 Línea 024\n📞 Emergencias: 112',
+          isCrisis: false
+        });
+      } finally {
+        this.chatLoading = false;
+        this.saveChatMessages();
+        this.$nextTick(() => this.scrollChat());
+      }
+    },
+    saveChatMessages() {
+      if (this.currentUserLogin) {
+        chatbot.saveConversation(this.currentUserLogin, this.chatMessages);
+      }
+    },
+    scrollChat() {
+      const container = this.$refs.chatMessages;
+      if (container) container.scrollTop = container.scrollHeight;
     }
   },
   watch: {
+    currentUserLogin(newLogin, oldLogin) {
+      if (oldLogin) {
+        chatbot.saveConversation(oldLogin, this.chatMessages);
+      }
+      this.chatMessages = chatbot.loadConversation(newLogin);
+      this.chatOpen = false;
+      this.chatInput = '';
+    },
     $route(newValue) {
       if (this.store.state.user.logged) {
         if (newValue.name === "NoteList") {
@@ -257,5 +394,163 @@ nav a {
 
 .user-dropdown .dropdown-divider {
   margin: 0;
+}
+
+/* Botón flotante del chatbot */
+.chatbot-fab {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.6rem;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  transition: transform 0.3s, box-shadow 0.3s;
+  z-index: 1060;
+  border: none;
+  cursor: pointer;
+}
+
+.chatbot-fab:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+  color: #fff;
+}
+
+.chatbot-fab-active {
+  background: #dc3545;
+  box-shadow: 0 4px 15px rgba(220, 53, 69, 0.4);
+}
+
+.chatbot-fab-active:hover {
+  box-shadow: 0 6px 20px rgba(220, 53, 69, 0.6);
+}
+
+/* Panel lateral del chatbot */
+.chatbot-panel {
+  position: fixed;
+  bottom: 100px;
+  right: 30px;
+  width: 380px;
+  height: 500px;
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.18);
+  display: flex;
+  flex-direction: column;
+  z-index: 1055;
+  overflow: hidden;
+  transform: scale(0) translateY(20px);
+  transform-origin: bottom right;
+  opacity: 0;
+  transition: transform 0.3s ease, opacity 0.3s ease;
+  pointer-events: none;
+}
+
+.chatbot-panel-open {
+  transform: scale(1) translateY(0);
+  opacity: 1;
+  pointer-events: all;
+}
+
+.chatbot-header {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+  padding: 12px 16px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 1rem;
+}
+
+.chatbot-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.chatbot-msg-user {
+  align-self: flex-end;
+  max-width: 80%;
+  text-align: right;
+}
+
+.chatbot-msg-bot {
+  align-self: flex-start;
+  max-width: 80%;
+  text-align: left;
+}
+
+.chatbot-bubble {
+  display: inline-block;
+  padding: 8px 14px;
+  border-radius: 14px;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  word-break: break-word;
+}
+
+.chatbot-msg-user .chatbot-bubble {
+  border-bottom-right-radius: 4px;
+}
+
+.chatbot-msg-bot .chatbot-bubble {
+  border-bottom-left-radius: 4px;
+}
+
+.chatbot-input {
+  padding: 10px;
+  border-top: 1px solid #e9ecef;
+  display: flex;
+  gap: 8px;
+}
+
+.chatbot-input .form-control {
+  border-radius: 20px;
+}
+
+.chatbot-input .btn {
+  border-radius: 50%;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Animación de typing */
+.chatbot-typing span {
+  animation: blink 1.4s infinite;
+  font-size: 1.4rem;
+  line-height: 1;
+}
+
+.chatbot-typing span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+
+.chatbot-typing span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+@keyframes blink {
+  0%, 20% { opacity: 0.2; }
+  50% { opacity: 1; }
+  100% { opacity: 0.2; }
+}
+
+/* Mensaje de crisis */
+.chatbot-crisis {
+  border-left: 3px solid #dc3545;
 }
 </style>
