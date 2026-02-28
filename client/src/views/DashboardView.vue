@@ -16,81 +16,92 @@
 
     <!-- Estadísticas Generales -->
     <div class="row mb-4">
-      <div class="col-md-3 mb-3">
-        <router-link to="/journal" class="text-decoration-none">
-          <div class="card text-center shadow-sm hover-card">
-            <div class="card-body">
-              <i class="bi bi-journal-text display-4 text-primary"></i>
-              <h3 class="mt-3">{{ journalEntries }}</h3>
-              <p class="text-muted">Entradas del Diario</p>
-            </div>
-          </div>
-        </router-link>
+      <!-- Spinner de carga -->
+      <div v-if="loading" class="col-12 text-center py-5">
+        <div class="spinner-border text-primary" role="status" style="width: 3rem; height: 3rem;">
+          <span class="visually-hidden">Cargando estadísticas...</span>
+        </div>
+        <p class="mt-3 text-muted">Cargando tus estadísticas...</p>
       </div>
-      <div class="col-md-3 mb-3">
-        <router-link to="/mental-health-goals" class="text-decoration-none">
-          <div class="card text-center shadow-sm hover-card">
-            <div class="card-body">
-              <i class="bi bi-trophy display-4 text-warning"></i>
-              <h3 class="mt-3">{{ activeGoals }}</h3>
-              <p class="text-muted">Metas Activas</p>
+
+      <!-- Tarjetas de estadísticas -->
+      <template v-else>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <router-link to="/journal" class="text-decoration-none">
+            <div class="card text-center shadow-sm hover-card stat-card">
+              <div class="card-body py-4">
+                <i class="bi bi-journal-text display-4 text-primary mb-3"></i>
+                <h2 class="stat-number text-primary mb-2">{{ journalEntries }}</h2>
+                <p class="text-muted mb-0 stat-label">Entradas del Diario</p>
+              </div>
             </div>
-          </div>
-        </router-link>
-      </div>
-      <div class="col-md-3 mb-3">
-        <router-link to="/wellness" class="text-decoration-none">
-          <div class="card text-center shadow-sm hover-card">
-            <div class="card-body">
-              <i class="bi bi-flower1 display-4 text-success"></i>
-              <h3 class="mt-3">{{ wellnessPractices }}</h3>
-              <p class="text-muted">Prácticas de Bienestar</p>
+          </router-link>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <router-link to="/mental-health-goals" class="text-decoration-none">
+            <div class="card text-center shadow-sm hover-card stat-card">
+              <div class="card-body py-4">
+                <i class="bi bi-trophy display-4 text-warning mb-3"></i>
+                <h2 class="stat-number text-warning mb-2">{{ activeGoals }}</h2>
+                <p class="text-muted mb-0 stat-label">Metas Activas</p>
+              </div>
             </div>
-          </div>
-        </router-link>
-      </div>
-      <div class="col-md-3 mb-3">
-        <router-link to="/support-circles" class="text-decoration-none">
-          <div class="card text-center shadow-sm hover-card">
-            <div class="card-body">
-              <i class="bi bi-people display-4 text-info"></i>
-              <h3 class="mt-3">{{ supportCircles }}</h3>
-              <p class="text-muted">Círculos de Apoyo</p>
+          </router-link>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <router-link to="/wellness" class="text-decoration-none">
+            <div class="card text-center shadow-sm hover-card stat-card">
+              <div class="card-body py-4">
+                <i class="bi bi-flower1 display-4 text-success mb-3"></i>
+                <h2 class="stat-number text-success mb-2">{{ wellnessPractices }}</h2>
+                <p class="text-muted mb-0 stat-label">Prácticas de Bienestar</p>
+              </div>
             </div>
-          </div>
-        </router-link>
-      </div>
+          </router-link>
+        </div>
+        <div class="col-md-3 col-sm-6 mb-3">
+          <router-link to="/support-circles" class="text-decoration-none">
+            <div class="card text-center shadow-sm hover-card stat-card">
+              <div class="card-body py-4">
+                <i class="bi bi-people display-4 text-info mb-3"></i>
+                <h2 class="stat-number text-info mb-2">{{ supportCircles }}</h2>
+                <p class="text-muted mb-0 stat-label">Círculos de Apoyo</p>
+              </div>
+            </div>
+          </router-link>
+        </div>
+      </template>
     </div>
 
     <!-- Recordatorios del día -->
     <div class="row mb-4">
       <div class="col-lg-6 mb-3">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm h-100">
           <div class="card-header bg-primary text-white">
-            <i class="bi bi-calendar-day me-2"></i>Momentos de Hoy
+            <i class="bi bi-calendar-day me-2"></i><strong>Momentos de Hoy</strong>
           </div>
           <div class="card-body">
             <div class="list-group list-group-flush">
-              <div class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
                 <div>
-                  <i class="bi bi-sunrise text-warning me-2"></i>
+                  <i class="bi bi-sunrise text-warning me-2 fs-5"></i>
                   <strong>Meditación matutina</strong>
                 </div>
-                <span class="badge bg-success">10 min</span>
+                <span class="badge bg-success rounded-pill">10 min</span>
               </div>
-              <div class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
                 <div>
-                  <i class="bi bi-journal-text text-primary me-2"></i>
+                  <i class="bi bi-journal-text text-primary me-2 fs-5"></i>
                   <strong>Escribir en el diario</strong>
                 </div>
-                <span class="badge bg-info">Pendiente</span>
+                <span class="badge bg-info rounded-pill">Pendiente</span>
               </div>
-              <div class="list-group-item d-flex justify-content-between align-items-center">
+              <div class="list-group-item d-flex justify-content-between align-items-center border-0 px-0">
                 <div>
-                  <i class="bi bi-moon-stars text-info me-2"></i>
+                  <i class="bi bi-moon-stars text-info me-2 fs-5"></i>
                   <strong>Reflexión nocturna</strong>
                 </div>
-                <span class="badge bg-secondary">Programado</span>
+                <span class="badge bg-secondary rounded-pill">Programado</span>
               </div>
             </div>
           </div>
@@ -99,9 +110,9 @@
 
       <!-- Estado de ánimo reciente -->
       <div class="col-lg-6 mb-3">
-        <div class="card shadow-sm">
+        <div class="card shadow-sm h-100">
           <div class="card-header bg-info text-white">
-            <i class="bi bi-emoji-smile me-2"></i>¿Cómo te sientes hoy?
+            <i class="bi bi-emoji-smile me-2"></i><strong>¿Cómo te sientes hoy?</strong>
           </div>
           <div class="card-body">
             <!-- Caritas interactivas -->
@@ -129,39 +140,6 @@
               </div>
               <div class="motivational-message alert" :class="selectedMood.alertClass">
                 <p class="mb-0">{{ selectedMood.message }}</p>
-              </div>
-              <button class="btn btn-sm btn-outline-secondary mt-2" @click="resetMood">
-                <i class="bi bi-arrow-clockwise me-1"></i>Cambiar estado
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Acciones rápidas -->
-    <div class="row mb-4">
-      <div class="col-12">
-        <div class="card shadow-sm">
-          <div class="card-header">
-            <i class="bi bi-lightning me-2"></i>Acciones Rápidas
-          </div>
-          <div class="card-body">
-            <div class="row">
-              <div class="col-md-4 mb-2">
-                <router-link to="/journal/new" class="btn btn-outline-primary w-100">
-                  <i class="bi bi-journal-plus me-2"></i>Nueva Entrada
-                </router-link>
-              </div>
-              <div class="col-md-4 mb-2">
-                <router-link to="/mental-health-goals/new" class="btn btn-outline-warning w-100">
-                  <i class="bi bi-trophy me-2"></i>Crear Meta
-                </router-link>
-              </div>
-              <div class="col-md-4 mb-2">
-                <router-link to="/journal/chatbot" class="btn btn-outline-info w-100">
-                  <i class="bi bi-chat-dots me-2"></i>Hablar con IA
-                </router-link>
               </div>
             </div>
           </div>
@@ -251,10 +229,18 @@ export default {
       return store.state.user.name || store.state.user.login || 'Usuario'
     })
 
+    const userLogin = computed(() => {
+      return store.state.user.login || 'guest'
+    })
+
+    const getMoodStorageKey = () => {
+      return `lastMoodDate_${userLogin.value}`
+    }
+
     const selectMood = async (mood) => {
       // Verificar si ya se registró un estado de ánimo hoy
       const today = new Date().toISOString().split('T')[0]
-      const lastMoodDate = localStorage.getItem('lastMoodDate')
+      const lastMoodDate = localStorage.getItem(getMoodStorageKey())
 
       if (lastMoodDate === today) {
         // Ya se registró un estado de ánimo hoy
@@ -262,115 +248,98 @@ export default {
         return
       }
 
-      // PRIMERO: Mostrar el estado de ánimo seleccionado
-      selectedMood.value = mood
-      moodSelected.value = true
-
-      // SEGUNDO: Guardar en localStorage inmediatamente
-      localStorage.setItem('lastMoodDate', today)
-
-      const moodEntry = {
-        date: today,
-        mood: mood.value,
-        moodLabel: mood.label,
-        title: `Estado de ánimo del día`,
-        content: `Hoy me siento ${mood.label.toLowerCase()}`,
-        tags: ['estado-animo'],
-        timestamp: new Date().toISOString()
-      }
-
-      // Guardar en localStorage como backup
-      const savedMoods = JSON.parse(localStorage.getItem('moodHistory') || '[]')
-      savedMoods.push(moodEntry)
-      localStorage.setItem('moodHistory', JSON.stringify(savedMoods))
-
-      // TERCERO: Incrementar el contador de entradas
-      journalEntries.value++
-
-      // CUARTO: Intentar guardar en el backend (en segundo plano)
       try {
+        // PRIMERO: Guardar en el diario
+        const moodEntry = {
+          date: today,
+          mood: mood.value,
+          moodLabel: mood.label,
+          title: `Estado de ánimo: ${mood.label}`,
+          content: `Hoy me siento ${mood.label.toLowerCase()}. ${mood.message}`,
+          tags: ['estado-animo'],
+          timestamp: new Date().toISOString()
+        }
+
+        // Guardar en el diario usando el repositorio
         await JournalRepository.create(moodEntry)
-      } catch (backendError) {
-        // Backend no disponible, dato ya guardado localmente
+
+        // SEGUNDO: Actualizar el estado para mostrar la frase motivacional
+        selectedMood.value = mood
+        moodSelected.value = true
+
+        // TERCERO: Guardar en localStorage para control de fecha (por usuario)
+        localStorage.setItem(getMoodStorageKey(), today)
+
+        // CUARTO: Incrementar el contador de entradas
+        journalEntries.value++
+
+        // QUINTO: Mostrar notificación de éxito
+        notify.success('¡Estado de ánimo registrado en tu diario!')
+
+      } catch (error) {
+        console.error('Error al registrar estado de ánimo:', error)
+        notify.error('Error al registrar tu estado de ánimo. Inténtalo de nuevo.')
       }
-    }
-
-    const resetMood = () => {
-      const today = new Date().toISOString().split('T')[0]
-      const lastMoodDate = localStorage.getItem('lastMoodDate')
-
-      if (lastMoodDate === today) {
-        // Limpiar el estado pero mantener la fecha para que pueda cambiar el de hoy
-        localStorage.removeItem('lastMoodDate')
-      }
-
-      moodSelected.value = false
-      selectedMood.value = null
     }
 
     const loadStatistics = async () => {
       loading.value = true
 
-      // Cargar entradas del diario
-      try {
-        const journals = await JournalRepository.findAll()
-        journalEntries.value = Array.isArray(journals) ? journals.length : 0
-      } catch (error) {
+      // Cargar todas las estadísticas en paralelo para mejor rendimiento
+      const [journals, goals, practices, circles] = await Promise.allSettled([
+        JournalRepository.findAll(),
+        MentalHealthGoalRepository.findActive(),
+        WellnessPracticeRepository.findAll(),
+        SupportCircleRepository.findAll()
+      ])
+
+      // Procesar entradas del diario
+      if (journals.status === 'fulfilled') {
+        journalEntries.value = Array.isArray(journals.value) ? journals.value.length : 0
+      } else {
         journalEntries.value = 0
       }
 
-      // Cargar metas activas
-      try {
-        const goals = await MentalHealthGoalRepository.findActive()
-        activeGoals.value = Array.isArray(goals) ? goals.length : 0
-      } catch (error) {
+      // Procesar metas activas
+      if (goals.status === 'fulfilled') {
+        activeGoals.value = Array.isArray(goals.value) ? goals.value.length : 0
+      } else {
         activeGoals.value = 0
       }
 
-      // Cargar prácticas de bienestar
-      try {
-        const practices = await WellnessPracticeRepository.findAll()
-        wellnessPractices.value = Array.isArray(practices) ? practices.length : 0
-      } catch (error) {
+      // Procesar prácticas de bienestar
+      if (practices.status === 'fulfilled') {
+        wellnessPractices.value = Array.isArray(practices.value) ? practices.value.length : 0
+      } else {
         wellnessPractices.value = 0
       }
 
-      // Cargar círculos de apoyo (comunidades del usuario)
-      try {
-        const circles = await SupportCircleRepository.findAll()
-        supportCircles.value = Array.isArray(circles) ? circles.length : 0
-      } catch (error) {
+      // Procesar círculos de apoyo
+      if (circles.status === 'fulfilled') {
+        supportCircles.value = Array.isArray(circles.value) ? circles.value.length : 0
+      } else {
         supportCircles.value = 0
       }
 
-      // Verificar si ya se registró un estado de ánimo hoy
+      // Verificar si ya se registró un estado de ánimo hoy para este usuario
       const today = new Date().toISOString().split('T')[0]
-      const lastMoodDate = localStorage.getItem('lastMoodDate')
+      const lastMoodDate = localStorage.getItem(getMoodStorageKey())
 
       if (lastMoodDate === today) {
-        // Buscar el mood registrado en el backend
+        // Buscar el mood registrado en el diario
         try {
           const entries = await JournalRepository.findByDate(today)
-          if (entries && entries.length > 0 && entries[0].mood) {
-            const todayEntry = entries[0]
-            const mood = moods.value.find(m => m.value === todayEntry.mood)
+          const moodEntry = entries.find(e => e.tags && e.tags.includes('estado-animo'))
+          
+          if (moodEntry && moodEntry.mood) {
+            const mood = moods.value.find(m => m.value === moodEntry.mood)
             if (mood) {
               selectedMood.value = mood
               moodSelected.value = true
             }
           }
         } catch (error) {
-          // Buscar en localStorage
-          const savedMoods = JSON.parse(localStorage.getItem('moodHistory') || '[]')
-          const todayMood = savedMoods.find(m => m.date === today)
-
-          if (todayMood) {
-            const mood = moods.value.find(m => m.value === todayMood.mood)
-            if (mood) {
-              selectedMood.value = mood
-              moodSelected.value = true
-            }
-          }
+          console.log('No se pudo cargar el estado de ánimo del día')
         }
       }
 
@@ -391,8 +360,7 @@ export default {
       moods,
       moodSelected,
       selectedMood,
-      selectMood,
-      resetMood
+      selectMood
     }
   }
 }
@@ -402,6 +370,12 @@ export default {
 .card {
   border: none;
   border-radius: 15px;
+}
+
+.card-header {
+  border-radius: 15px 15px 0 0 !important;
+  border: none;
+  font-weight: 600;
 }
 
 .hover-card {
@@ -417,17 +391,59 @@ export default {
   font-size: 3rem;
 }
 
+/* Estilos para tarjetas de estadísticas */
+.stat-card {
+  min-height: 220px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.stat-card .card-body {
+  width: 100%;
+}
+
+.stat-number {
+  font-size: 3rem;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.stat-label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Animación de entrada para números */
+@keyframes countUp {
+  from {
+    opacity: 0;
+    transform: scale(0.5);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.stat-number {
+  animation: countUp 0.6s ease-out;
+}
+
 .bg-gradient-primary {
   background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
 }
 
 .list-group-item {
-  border-left: 4px solid #667eea;
   transition: all 0.2s;
+  border: none !important;
+  padding: 0.75rem 0;
 }
 
 .list-group-item:hover {
-  background-color: #f8f9fa;
+  background-color: transparent !important;
   transform: translateX(5px);
 }
 
