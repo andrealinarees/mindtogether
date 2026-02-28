@@ -8,14 +8,17 @@ export default {
   // ==================== Circles (Communities) ====================
 
   async findAll() {
-    return CommunityRepository.findAll()
+    // Devolver solo las comunidades del usuario (sus círculos de apoyo)
+    return CommunityRepository.findMyCommunities()
   },
 
   async findAvailable() {
+    // Todas las comunidades disponibles
     return CommunityRepository.findAll()
   },
 
   async findRecommended() {
+    // Todas las comunidades recomendadas
     return CommunityRepository.findAll()
   },
 
