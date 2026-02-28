@@ -1,288 +1,125 @@
-# 🧠💚 MindTogether - Plataforma de Salud Mental y Bienestar Comunitario
+# MindTogether - Documentacion del Proyecto
 
-## 📋 Descripción del Proyecto
+## Que es MindTogether
 
-**MindTogether** es una plataforma de código abierto diseñada para proporcionar apoyo mutuo en salud mental, permitiendo a los usuarios realizar seguimiento de su bienestar emocional, participar en comunidades de apoyo, y recibir asistencia inteligente mediante IA para la detección temprana de riesgos y apoyo personalizado.
+MindTogether es una plataforma de salud mental y bienestar comunitario. Proporciona herramientas para el seguimiento emocional, la gestion de habitos saludables, el establecimiento de metas, la participacion en comunidades de apoyo y la asistencia mediante inteligencia artificial.
 
-### Misión
-Destigmatizar la salud mental proporcionando herramientas gratuitas, accesibles y basadas en comunidad para el seguimiento y mejora del bienestar emocional.
+No es un sustituto de la atencion profesional de salud mental, sino una herramienta de apoyo complementaria.
 
-### Valores Principales
-- ✅ **Privacidad y Anonimato**: Protección máxima de datos sensibles
-- ✅ **Accesibilidad**: Gratuito y de código abierto
-- ✅ **Apoyo Comunitario**: Círculos de apoyo seguros
-- ✅ **Detección Temprana**: IA para identificar señales de riesgo
-- ✅ **Empoderamiento**: Herramientas de auto-gestión del bienestar
+Para los detalles tecnicos (arquitectura, tecnologias, despliegue, puertos y configuracion), consulta el [README.md](README.md).
 
 ---
 
-## 🏗️ Arquitectura de Microservicios
+## Que puede hacer un usuario
 
-### Microservicios Adaptados
+### Prácticas de bienestar
 
-#### 1. **wellness-practices**
-**Puerto**: 9094  
-**Base de datos**: PostgreSQL `wellness_db`
+El usuario puede crear prácticas orientadas a la salud mental y hacer seguimiento de su cumplimiento. Las prácticas se organizan en 10 categorias precargadas.
 
-**Responsabilidades**:
-- Gestión de prácticas de bienestar (meditación, ejercicio, journaling, etc.)
-- Categorías de prácticas (mindfulness, físicas, sociales, creativas)
-- Seguimiento de completitud y streaks
-- Sugerencias personalizadas según estado de ánimo -> logear como te sientes en ese dia con emoticonos y que simplemente te devuelve una respuesta breve en una frase
+- Crear prácticas con frecuencia diaria o semanal.
+- Marcar cada dia si se ha completado la práctica.
+- El sistema calcula automaticamente las rachas (racha actual y racha mas larga).
+- Añadir reflexiones sobre la dificultad de cada prácticas.
 
-**Entidades principales**:
-- `WellnessPractice`: Práctica de bienestar del usuario
-- `PracticeCompletion`: Registro de completitud
-- `PracticeCategory`: Categorías (Mindfulness, Ejercicio, Social, etc.)
-- `MoodLog`: Registro de estado de ánimo antes/después de práctica
 
----
+### Metas de salud mental
 
-#### 2. **mental-health-goals** 
-**Puerto**: 9095  
-**Base de datos**: PostgreSQL `mental_health_goals_db`
+Metas especificas orientadas al bienestar emocional, con categorias como Mindfulness, Actividad Fisica, Conexion Social, Regulacion Emocional, Calidad del Sueño, Nutricion o Expresion Creativa.
 
-**Responsabilidades**:
-- Objetivos de bienestar emocional
-- Hitos de progreso en salud mental
-- Metas relacionadas con prácticas de bienestar
-- Sistema de logros y badges
+- Cada meta puede tener hitos intermedios con mensajes de celebracion.
+- El usuario escribe su motivacion personal, el beneficio esperado y el nivel de dificultad.
+- Puede activar recordatorios y compartir progreso con circulos de apoyo.
+- Una seccion de analiticas muestra tendencias, graficos de progreso y distribucion por categorias.
 
-**Entidades principales**:
-- `MentalHealthGoal`: Meta de bienestar (ej: "Meditar 5 días esta semana")
-- `GoalMilestone`: Hitos intermedios
-- `Achievement`: Logros desbloqueados
-- `ProgressSnapshot`: Instantáneas de progreso
+### Gamificacion: recompensas 
 
----
+Al cumplir metas, el usuario desbloquea recompensas automaticamente.
 
-#### 3. **support-circles** 
-**Puerto**: 9097  
-**Base de datos**: PostgreSQL `support_circles_db`
+El usuario puede crear sus propias recompensas personalizadas vinculadas a metas (una comida, una experiencia, algo material...). Las recompensas empiezan bloqueadas y se desbloquean al completar la meta asociada.
 
-**Responsabilidades**:
-- Comunidades de apoyo por temáticas
-- Publicaciones y recursos compartidos
-- Moderación de contenido -> tendencias problemáticas?
+### Diario emocional
 
-**Entidades principales**:
-- `SupportCircle`: Círculo de apoyo (Ansiedad, Depresión, Duelo, etc.)
-- `CircleMember`: Miembros del círculo
-- `CirclePost`: Publicaciones anónimas/identificadas
-- `Resource`: Recursos compartidos (artículos, videos, ejercicios)
-- `SafetyReport`: Reportes de contenido inapropiado
+El usuario puede registrar su estado de animo (feliz, neutral, triste) tanto desde la pantalla principal (dashboard) como desde el propio diario. Al registrarlo, el estado de animo se actualiza automaticamente en ambos sitios.
+
+Ademas, puede escribir entradas diarias en un diario personal. La plataforma ofrece:
+
+- Una vista de calendario que muestra visualmente los dias segun el estado de animo.
+- Analisis de tendencias emocionales a lo largo del tiempo.
+- El chatbot de IA tiene acceso al diario para personalizar sus respuestas.
+
+### Comunidades de apoyo
+
+Los usuarios pueden crear o unirse a comunidades para compartir su experiencia. Al unirse, pueden elegir hacerlo de forma anonima, de modo que su identidad no sea visible para el resto de miembros.
+
+Dentro de cada comunidad es posible publicar distintos tipos de entradas: reflexiones, consejos, motivaciones, propuestas, preguntas o logros. Los usuarios pueden editar sus propias publicaciones y dar me gusta a las de otros miembros.
+
+Cada comunidad tiene roles (miembro y administrador). El administrador de la comunidad es quien la creo y puede gestionarla.
+
+### Noticias positivas
+
+El dashboard muestra un feed de noticias positivas sobre bienestar y salud mental en español, obtenidas de una API externa. Si la API no esta disponible, se muestran consejos de bienestar predefinidos.
+
+### Perfil
+
+El usuario puede ver y editar su perfil: nombre, email, telefono y ciudad.
 
 ---
 
-#### 4. **user-service** 
-**Puerto**: 9091  
-**Base de datos**: PostgreSQL `users_db`
+## Que puede hacer un administrador
 
-**Responsabilidades**:
-- Gestión de usuarios y autenticación
-- Perfiles de usuario (pueden ser anónimos)
-- Preferencias de privacidad
-- Historial de bienestar general
+Los administradores acceden a un panel con funcionalidades adicionales:
 
-**Nuevos campos en perfil**:
-- `anonymousMode`: boolean - modo completamente anónimo
-- `shareProgressWithCircles`: boolean
-- `emergencyContact`: String (opcional)
-- `therapistCode`: String - código para compartir progreso con terapeuta
-- `riskLevel`: Enum (LOW, MEDIUM, HIGH) - calculado por IA
+- Ver estadisticas generales de la plataforma.
+- Listar todos los usuarios, activar o desactivar cuentas y eliminar usuarios.
+- Visualizar los habitos de cualquier usuario con su detalle.
+- Gestionar comunidades.
 
 ---
 
-#### 5. **journal-ai-service** ⭐ NUEVO MICROSERVICIO
-**Puerto**: 9098  
-**Base de datos**: PostgreSQL `journal_db` 
-**Tecnología IA**: Ollama 
+## Inteligencia Artificial: chatbot de apoyo emocional
 
-**Acceso a datos de otros microservicios**:
-- ✅ Acceso a `wellness-practices` (puerto 9094): Para conocer las prácticas de bienestar del usuario y correlacionarlas con su estado emocional
-- ✅ Acceso a `mental-health-goals` (puerto 9095): Para entender objetivos y medir progreso
-- ✅ Acceso a `support-circles` (puerto 9097): Para contextualizar interacciones sociales del usuario
+La plataforma incluye un chatbot de IA que funciona como asistente de apoyo emocional. Utiliza el modelo llama3.2 a traves de Ollama, ejecutandose de forma local (los datos no salen del equipo del usuario).
 
-**Responsabilidades principales**:
+### Que hace el chatbot
 
-##### A. 📓 **Diario Digital con Calendario Inteligente**
+- Ofrece apoyo emocional basico en español.
+- Aplica tecnicas de terapia cognitivo-conductual.
+- Propone ejercicios de mindfulness y respiracion guiada.
+- Practica escucha activa y validacion emocional.
+- Lee las entradas del diario del usuario para personalizar las respuestas, detectando patrones emocionales, situaciones recurrentes y estrategias que funcionaron en el pasado.
+- Mantiene el historial de la conversacion para dar continuidad.
 
-**Sistema de Calendario:**
-- Vista de calendario mensual/semanal con indicadores visuales de cada día
-- Cada día puede tener múltiples entradas de diario
-- Estados visuales del día:
-  - 🟢 Verde: Día con entrada y mood positivo (8-10/10)
-  - 🟡 Amarillo: Día con entrada y mood neutral (5-7/10)
-  - 🔴 Rojo: Día con entrada y mood negativo (1-4/10)
-  - ⚪ Gris: Día sin entrada
-  - ⭐ Estrella: Día con logro especial o hito importante
-  - 🚨 Alerta: Día con detección de riesgo
-- Navegación rápida entre fechas
-- Resumen mensual: "Este mes escribiste 15 días, promedio de mood: 7/10"
-- Timeline cronológica de todas las entradas
-- Comparativa mes a mes
+### Deteccion de crisis
 
-**Entradas de Diario:**
-- Registro de entradas por fecha específica (pasada, presente o futura)
-- Editor de texto enriquecido con formato markdown
-- Posibilidad de múltiples entradas por día (mañana, tarde, noche)
-- Campos de cada entrada:
-  - Fecha y hora específica
-  - Momento del día (MORNING, AFTERNOON, EVENING, NIGHT)
-  - Título opcional
-  - Contenido (reflexiones libres) - encriptado
-  - Mood antes de escribir (1-10)
-  - Mood después de escribir (1-10)
-  - Tags manuales del usuario
-  - Tags automáticos generados por IA
-  - Imagen adjunta opcional
-  - Contexto: ubicación emocional ("casa", "trabajo", "parque")
-  - Personas mencionadas (anónimas: "madre", "amigo1", "terapeuta")
-  - Eventos importantes del día
-  - Marcador de favorito
-  - Control de privacidad: ¿Es accesible para la IA?
+El chatbot analiza cada mensaje en busca de señales de crisis:
 
-**Análisis Automático en cada entrada:**
-- Análisis de sentimiento automático (score -1.0 a 1.0)
-- Detección de patrones emocionales semanales/mensuales
-- Identificación de triggers recurrentes
-- Correlación entre eventos y estados de ánimo
-- Detección de nivel de riesgo (NONE, LOW, MEDIUM, HIGH, CRITICAL)
-- Generación de tags automáticos basados en contenido
-- Sugerencias de reflexión personalizadas
-- Búsqueda semántica en entradas previas: "¿Cuándo me sentí así antes?"
+- **Emergencia medica** (sobredosis, autolesion, ingesta de sustancias): responde inmediatamente con un mensaje predefinido que incluye numeros de emergencia (112, 024, 915 620 420), sin esperar a la IA. La prioridad es la seguridad.
+- **Crisis emocional** (ideacion suicida, desesperanza extrema, deseo de desaparecer): adjunta automaticamente recursos de ayuda profesional al final de la respuesta de la IA.
 
-**Contexto para la IA del Chat:**
-- Todas las entradas del diario forman el "perfil psicoemocional" del usuario
-- La IA tiene acceso completo (con permiso del usuario) a:
-  - Historial completo de entradas del diario
-  - Patrones emocionales identificados a largo plazo
-  - Triggers y situaciones recurrentes
-  - Progreso emocional a lo largo del tiempo
-  - Temas frecuentes de preocupación
-  - Estrategias que han funcionado anteriormente
-  - Correlación entre prácticas de bienestar y mood
-  - Información de wellness-practices activas
-  - Objetivos actuales de mental-health-goals
-- Este contexto permite al chatbot:
-  - Personalizar respuestas según la historia única del usuario
-  - Recordar conversaciones y situaciones previas mencionadas en el diario
-  - Detectar cambios o regresiones en el estado emocional
-  - Ofrecer recomendaciones basadas en lo que funcionó antes
-  - Validar emociones con conocimiento de la situación completa
-  - Hacer seguimiento de temas específicos a lo largo del tiempo
-  - Celebrar progreso y recordar victorias pasadas
-
-##### B. 📊 **Reportes de Bienestar**
-- Generación de reportes semanales/mensuales de estado emocional
-- Gráficos de tendencias de humor
-- Identificación de triggers y patrones
-- Correlación entre prácticas y mejoras en bienestar
-- Exportación de reportes para profesionales de salud
-
-##### C. 📅 **Planning Personalizado**
-- Generación de planes semanales de bienestar
-- Sugerencias de prácticas según historial
-- Adaptación dinámica según progreso
-- Recordatorios inteligentes
-- Integración con calendario
-
-##### D. 🚨 **Detección de Riesgos (Crisis Detection)**
-- Análisis de entradas de diario en busca de señales de alarma
-- Detección de lenguaje indicativo de:
-  - Ideación suicida
-  - Autolesión
-  - Crisis de ansiedad severa
-  - Abuso de sustancias
-  - Comportamientos de riesgo
-- Alertas graduales según nivel de riesgo
-- Sugerencias de recursos de ayuda inmediata
-- (Opcional) Notificación a contacto de emergencia
-
-##### E. 💬 **Asistente Conversacional**
-- Chatbot de apoyo emocional básico
-- No reemplaza terapia profesional (disclaimer)
-- Técnicas de CBT (Cognitive Behavioral Therapy)
-- Ejercicios de mindfulness guiados
-- Validación emocional y escucha activa
-
-**Entidades principales**:
-```java
-- JournalEntry: Entrada de diario
-  - id: Long
-  - userId: String
-  - content: String (encriptado)
-  - mood: Enum (VERY_SAD, SAD, NEUTRAL, GOOD, VERY_GOOD)
-  - sentimentScore: Float (-1.0 a 1.0)
-  - riskLevel: Enum (NONE, LOW, MEDIUM, HIGH, CRITICAL)
-  - detectedTriggers: List<String>
-  - createdAt: Timestamp
-  - isPrivate: Boolean
-
-- WellnessReport: Reporte generado
-  - id: Long
-  - userId: String
-  - reportType: Enum (WEEKLY, MONTHLY, CUSTOM)
-  - generatedContent: String (markdown)
-  - moodTrend: String
-  - recommendations: List<String>
-  - periodStart: Date
-  - periodEnd: Date
-  - generatedAt: Timestamp
-
-- WellnessPlan: Plan personalizado
-  - id: Long
-  - userId: String
-  - weekNumber: Integer
-  - practices: List<PlannedPractice>
-  - goals: List<String>
-  - motivationalMessage: String
-  - createdAt: Timestamp
-
-- RiskAlert: Alerta de riesgo
-  - id: Long
-  - userId: String
-  - journalEntryId: Long
-  - riskType: Enum (SUICIDAL_IDEATION, SELF_HARM, SEVERE_ANXIETY, SUBSTANCE_ABUSE)
-  - severity: Enum (LOW, MEDIUM, HIGH, CRITICAL)
-  - detectedPhrases: List<String>
-  - actionTaken: String
-  - resolvedAt: Timestamp (nullable)
-  - createdAt: Timestamp
-
-- ChatConversation: Conversación con IA
-  - id: Long
-  - userId: String
-  - messages: List<ChatMessage>
-  - startedAt: Timestamp
-  - endedAt: Timestamp (nullable)
-```
+El chatbot muestra en todo momento un aviso de que no reemplaza la atencion profesional.
 
 ---
 
-## 🔌 APIs Externas a Integrar
+## APIs externas utilizadas
 
-### 1. **Mental Health America API**
-**Alternativa**: Base de datos propia con:
-- Teléfonos de emergencia por país (112, 911, etc.)
-- Líneas de atención en crisis (Teléfono de la Esperanza, etc.)
-- Chat de crisis 24/7
-- Servicios de terapia online gratuitos/accesibles
+| API | Para que se usa |
+|-----|-----------------|
+| GNews | Muestra noticias positivas de bienestar y salud mental en español |
+| Ollama (local) | Ejecuta el modelo de IA llama3.2 para el chatbot de apoyo emocional |
 
-### 2. **News API** (filtrado positivo) -> alternativa positiva
-**Propósito**: Noticias constructivas para mejorar estado de ánimo
-- **Endpoint**: `https://newsapi.org/v2/everything`
-- **Filtros**: 
-  - Keywords: "good news", "positive", "heartwarming", "inspiring"
-  - Excluir: violence, disaster, pandemic, war
-- **Uso**: Feed diario de noticias positivas en dashboard
+---
 
-### 3. **Quotes API**
-**Propósito**: Frases motivacionales y de apoyo
-- **Endpoint**: `https://api.quotable.io/random`
-- **Categorías**: motivation, wellness, mindfulness, happiness
-- **Uso**: Quotes diarios en dashboard y notificaciones
+## Casos de uso resumidos
 
+1. **Registro y login**: El usuario crea una cuenta e inicia sesion.
+2. **Gestionar prácticas de bienestar**: Crear prácticas categorizadas, marcarlas como completados...
+3. **Definir metas**: Establecer metas personales y de salud mental con hitos, seguimiento de progreso.
+4. **Desbloquear logros**: Ganar logros y puntos al cumplir metas y mantener rachas. Crear recompensas personalizadas.
+5. **Escribir en el diario**: Registrar el estado de animo diario, ver la evolucion en un calendario y analizar tendencias.
+6. **Hablar con el chatbot**: Conversar con un asistente de IA que ofrece apoyo emocional y detecta situaciones de crisis.
+7. **Participar en comunidades**: Unirse a comunidades y compartir reflexiones, consejos y logros.
+8. **Administrar la plataforma**: Gestionar usuarios, revisar estadisticas y moderar comunidades (solo administradores).
 
-**⚠️ DISCLAIMER IMPORTANTE**:
-Este software es una herramienta de apoyo y NO reemplaza la atención profesional de salud mental. Si estás en crisis, por favor contacta servicios de emergencia o líneas de atención en crisis de tu país. Este proyecto está desarrollado con las mejores intenciones, pero no nos hacemos responsables de decisiones tomadas basándose únicamente en la información proporcionada por la IA.
+---
+
+Disclaimer: MindTogether es una herramienta de apoyo y no reemplaza la atencion profesional de salud mental. Si estas en crisis, contacta con los servicios de emergencia de tu pais.
