@@ -7,11 +7,16 @@
         <label class="form-label">¿Cómo te sientes hoy?</label>
         <select class="form-select" v-model="form.mood">
           <option value="">Selecciona tu estado de ánimo</option>
-          <option value="very_happy">😄 Muy feliz</option>
-          <option value="happy">🙂 Feliz</option>
-          <option value="neutral">😐 Neutral</option>
-          <option value="sad">😔 Triste</option>
-          <option value="very_sad">😢 Muy triste</option>
+          <option value="excellent">Excelente</option>
+          <option value="good">Bien</option>
+          <option value="okay">Regular</option>
+          <option value="sad">Triste</option>
+          <option value="anxious">Ansioso/a</option>
+          <option value="stressed">Estresado/a</option>
+          <option value="angry">Enojado/a</option>
+          <option value="calm">Tranquilo/a</option>
+          <option value="energetic">Con energía</option>
+          <option value="tired">Cansado/a</option>
         </select>
       </div>
       

@@ -3,8 +3,8 @@
     <div class="login-card">
       <div class="logo-section">
         <i class="bi bi-calendar-check-fill logo-icon"></i>
-        <h1 class="app-title">Habit Tracker</h1>
-        <p class="app-subtitle">Tu compañero para construir mejores hábitos</p>
+        <h1 class="app-title">MindTogether</h1>
+        <p class="app-subtitle">Tu compañero para el bienestar mental</p>
       </div>
 
       <!-- Formulario de Login -->
