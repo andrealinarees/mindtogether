@@ -1,34 +1,40 @@
 # MindTogether
 
-Aplicación web de gestión de hábitos y metas personales basada en una arquitectura de **microservicios** con Spring Boot y Vue.js.
+Plataforma web de salud mental y bienestar comunitario basada en una arquitectura de microservicios con Spring Boot y Vue.js.
 
-## Descripción
+## Descripcion
 
-MindTogether permite a los usuarios:
-- Crear y hacer seguimiento de **hábitos** diarios
-- Definir y gestionar **metas** personales
-- Unirse a **comunidades** para compartir progreso
-- Ver un **dashboard** con estadísticas personales
-- Panel de **administración** para gestión de usuarios y contenido
+MindTogether es una plataforma orientada al apoyo mutuo en salud mental. Permite a los usuarios realizar un seguimiento de su bienestar emocional, gestionar habitos y metas, participar en comunidades de apoyo, llevar un diario emocional con analisis de IA, y recibir asistencia mediante un chatbot conversacional.
 
 ## Arquitectura
 
-El proyecto sigue una arquitectura de microservicios compuesta por los siguientes servicios:
+El proyecto sigue una arquitectura de microservicios con service discovery mediante Consul. Cada microservicio tiene su propia base de datos PostgreSQL (patron database-per-service) y se comunican entre si a traves de OpenFeign. El gateway centraliza todas las peticiones y gestiona la autenticacion JWT.
 
-| Servicio | Descripción | Tecnología |
-|----------|-------------|------------|
-| `gateway` | API Gateway y punto de entrada único | Spring Cloud Gateway |
-| `user` | Gestión de usuarios y autenticación | Spring Boot |
-| `habits` | Gestión de hábitos | Spring Boot |
-| `goals` | Gestión de metas | Spring Boot |
-| `community` | Gestión de comunidades | Spring Boot |
-| `client` | Frontend SPA | Vue.js + Vite |
+| Servicio | Puerto | Descripcion |
+|----------|--------|-------------|
+| `gateway` | 8080 | API Gateway, validacion JWT y enrutamiento | 
+| `user` | 9091 | Gestion de usuarios, autenticacion y perfiles |
+| `habits` | 9094 | Gestion de habitos con integracion meteorologica |
+| `goals` | 9095 | Metas, logros, recompensas y snapshots de progreso |
+| `community` | 9097 | Comunidades, miembros y publicaciones |
+| `client` | 1234 | Frontend SPA |
+| `consul` | 8500 | Service discovery y configuracion |
+
+Cada microservicio backend tiene su propia base de datos PostgreSQL:
+
+| Base de datos | Puerto externo | Servicio |
+|---------------|----------------|----------|
+| `users` | 5455 | user |
+| `habits_db` | 5457 | habits |
+| `mental_health_goals_db` | 5458 | goals |
+| `community_db` | 5459 | community |
 
 ## Requisitos previos
 
 - [Docker](https://www.docker.com/) y Docker Compose
-- [Java 21+](https://adoptium.net/) (para desarrollo local)
+- [Java 17+](https://adoptium.net/) (para desarrollo local)
 - [Node.js 20+](https://nodejs.org/) (para desarrollo del cliente)
+- [Ollama](https://ollama.ai/) con el modelo `llama3.2` (para el chatbot de IA)
 
 ## Puesta en marcha
 
@@ -38,11 +44,26 @@ El proyecto sigue una arquitectura de microservicios compuesta por los siguiente
 docker compose up --build
 ```
 
-La aplicación estará disponible en `http://localhost:8080`.
+Esto levanta todos los microservicios, las bases de datos PostgreSQL y Consul. La aplicacion estara disponible en:
+
+- Frontend: `http://localhost:1234`
+- API Gateway: `http://localhost:8080`
+- Consul UI: `http://localhost:8500`
+
+### Chatbot de IA (Ollama)
+
+El chatbot de apoyo emocional usa Ollama de forma local. Para habilitarlo:
+
+```bash
+ollama pull llama3.2
+ollama serve
+```
+
+Ollama debe estar corriendo en `http://localhost:11434`.
 
 ### Desarrollo local
 
-Cada microservicio backend se puede arrancar individualmente desde su carpeta:
+Cada microservicio backend se puede arrancar individualmente:
 
 ```bash
 cd user
@@ -62,32 +83,56 @@ npm run dev
 ```
 mindtogether/
 ├── gateway/        # API Gateway (Spring Cloud Gateway)
-├── user/           # Microservicio de usuarios
-├── habits/         # Microservicio de hábitos
-├── goals/          # Microservicio de metas
+├── user/           # Microservicio de usuarios y autenticacion
+├── habits/         # Microservicio de habitos
+├── goals/          # Microservicio de metas y logros
 ├── community/      # Microservicio de comunidades
 ├── client/         # Frontend Vue.js
-└── compose.yaml    # Configuración Docker Compose
+├── compose.yaml    # Configuracion Docker Compose
+└── LICENSE         # Licencia MIT
 ```
 
-## Tecnologías utilizadas
+## Tecnologias utilizadas
 
 **Backend**
-- Java 21 + Spring Boot 3
-- Spring Security (JWT)
-- Spring Data JPA + PostgreSQL
-- Spring Cloud Gateway
+- Java 17 + Spring Boot 3
+- Spring Cloud Gateway (WebFlux)
+- Spring Cloud Consul (service discovery)
+- Spring Cloud OpenFeign (comunicacion entre servicios)
+- Spring Security con JWT personalizado (jjwt)
+- Spring Data JPA + PostgreSQL 14
+- Lombok
 
 **Frontend**
 - Vue.js 3 (Composition API)
-- Vite
-- Pinia (gestión de estado)
 - Vue Router
+- Axios
+- Bootstrap 5 + Bootstrap Icons
+- Vite
+- Sass
+
+**IA y APIs externas**
+- Ollama + llama3.2 (chatbot de apoyo emocional)
+- Open-Meteo API (recomendaciones meteorologicas para habitos)
+- GNews API (noticias positivas de bienestar)
 
 **Infraestructura**
 - Docker / Docker Compose
-- PostgreSQL
+- PostgreSQL 14 (una instancia por microservicio)
+- HashiCorp Consul 1.17
+
+## Usuarios de prueba
+
+La aplicacion incluye datos de prueba precargados:
+
+| Usuario | Rol | Estado |
+|---------|-----|--------|
+| `pepemin` | ADMIN | Activo |
+| `mariadmin` | ADMIN | Activo |
+| `laura` | USER | Activo |
+| `pedroff` | USER | Inactivo |
+| `ramon` | USER | Activo |
 
 ## Licencia
 
-Proyecto de código abierto desarrollado para la comunidad de salud mental.
+Proyecto de codigo abierto bajo la [Licencia MIT](LICENSE). Consulta [LICENSE.md](LICENSE.md) para mas detalles sobre lo que esto permite.
