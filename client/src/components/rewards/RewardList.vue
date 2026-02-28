@@ -1,19 +1,15 @@
 <template>
-  <div class="container-fluid py-4">
+  <div class="container mt-4">
     <!-- Header -->
-    <div class="row mb-4">
-      <div class="col">
-        <h2 class="mb-1">
-          <i class="bi bi-gift me-2"></i>Mis Recompensas
-        </h2>
-        <p class="text-muted">Crea recompensas personalizadas y asócialas a tus metas</p>
-      </div>
-      <div class="col-auto">
-        <router-link to="/rewards/new" class="btn btn-primary">
-          <i class="bi bi-plus-circle me-2"></i>Nueva Recompensa
-        </router-link>
-      </div>
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="mb-1">
+        <i class="bi bi-gift me-2"></i>Mis Recompensas
+      </h2>
+      <router-link to="/rewards/new" class="btn btn-primary">
+        <i class="bi bi-plus-circle me-2"></i>Nueva Recompensa
+      </router-link>
     </div>
+    <p class="text-muted">Crea recompensas personalizadas y asócialas a tus metas</p>
 
     <!-- Estadísticas -->
     <div v-if="stats" class="row g-3 mb-4">
