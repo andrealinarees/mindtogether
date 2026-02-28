@@ -12,18 +12,6 @@ export default [
     meta: { requiresAuth: true }
   },
   {
-    path: '/wellness/:id',
-    name: 'WellnessPracticeDetail',
-    component: () => import('./WellnessPracticeDetail.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
-    path: '/wellness/:id/edit',
-    name: 'WellnessPracticeEdit',
-    component: () => import('./WellnessPracticeForm.vue'),
-    meta: { requiresAuth: true }
-  },
-  {
     path: '/wellness/guided-content',
     name: 'GuidedContentLibrary',
     component: () => import('./GuidedContentLibrary.vue'),
@@ -39,6 +27,18 @@ export default [
     path: '/wellness/recommendations',
     name: 'WellnessRecommendations',
     component: () => import('./WellnessRecommendations.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/wellness/:id',
+    name: 'WellnessPracticeDetail',
+    component: () => import('./WellnessPracticeDetail.vue'),
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/wellness/:id/edit',
+    name: 'WellnessPracticeEdit',
+    component: () => import('./WellnessPracticeForm.vue'),
     meta: { requiresAuth: true }
   }
 ]
