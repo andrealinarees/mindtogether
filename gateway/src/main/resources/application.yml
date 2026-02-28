@@ -57,6 +57,13 @@ spring:
           predicates:
             - Path=/api/goals/**
         
+        - id: mental-health-goals-service
+          uri: lb://mental-health-goals-service
+          filters:
+            - DedupeResponseHeader=Access-Control-Allow-Credentials Access-Control-Allow-Origin
+          predicates:
+            - Path=/api/mental-health-goals/**,/api/achievements/**,/api/progress-snapshots/**
+        
         - id: badges-service
           uri: lb://badges-service
           filters:

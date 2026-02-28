@@ -1,5 +1,6 @@
 package com.mindtogether.goals.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -30,6 +31,7 @@ public class ProgressSnapshot {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "goal_id", nullable = false)
+    @JsonIgnore
     private MentalHealthGoal goal;
 
     @Column(name = "snapshot_date", nullable = false)

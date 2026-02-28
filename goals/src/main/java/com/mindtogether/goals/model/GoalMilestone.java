@@ -1,5 +1,6 @@
 package com.mindtogether.goals.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -27,6 +28,7 @@ public class GoalMilestone {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "goal_id", nullable = false)
+    @JsonIgnore
     private MentalHealthGoal goal;
 
     @Column(nullable = false, length = 200)
